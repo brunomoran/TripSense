@@ -1,13 +1,21 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import '../styles/Header.css';
 
 const Header = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+
     return (
         <header className="header">
             <div className="header-container">
+                {/*Botón de menú hamburguesa*/}
+                <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+                    ☰
+                </button>
+
                 {/* parte izquierda */}
-                <nav className="nav-left">
+                <nav className={`nav-left ${menuOpen ? 'open' : ''}`}>
                     <div className="nav-item">
                         <Link to="/">Prepara tu viaje</Link>
                     </div>
@@ -25,7 +33,7 @@ const Header = () => {
                 </div>
 
                 {/* parte derecha */}
-                <nav className="nav-right">
+                <nav className={`nav-right ${menuOpen ? 'open' : ''}`}>
                     <div className="nav-item">
                         <Link to="/">Ayuda</Link>
                     </div>
