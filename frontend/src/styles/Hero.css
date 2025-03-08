@@ -16,8 +16,7 @@ html, body {
     justify-content: center;
     align-items: center;
     background-color: #111;
-    padding: 80px 20px;
-    min-height: 100vh;
+    padding: 50px 20px;
     width: 100%;
 }
 
