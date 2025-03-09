@@ -13,6 +13,7 @@ html, body {
 
 .hero {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: #111;
@@ -20,12 +21,13 @@ html, body {
     width: 100%;
 }
 
-.hero-container {
+.hero-top-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
     gap: 40px;
+    margin-bottom: 60px;
 }
 
 .hero-text {
@@ -100,6 +102,109 @@ html, body {
     border-radius: 20px;
 }
 
+.hero-bottom-section {
+    padding: 60px 20px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.features-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+    margin: 0 auto;
+    max-width: 1200px;
+    flex-wrap: wrap;
+}
+
+.feature {
+    flex: 1;
+    min-width: 250px;
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #222;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.feature h3 {
+    margin-bottom: 12px;
+    color: #007bff;
+}
+
+.feature p {
+    color: white;
+    line-height: 1.6;
+}
+
+.quick-start {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.quick-start h2 {
+    margin-bottom: 30px;
+    color: #0056b3;
+    position: relative;
+    display: inline-block;
+}
+
+.quick-start h2:after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 3px;
+    background-color: #007bff;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.step {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+    padding: 0 15px;
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    font-weight: bold;
+}
+
+.step p {
+    color: white;
+}
+
 /* Responsive Design */
 
 @media (max-width: 900px) {
@@ -114,5 +219,21 @@ html, body {
 
     .hero-image {
         max-width: 80%;
+    }
+}
+
+@media (max-width: 768px) {
+    .features-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .steps {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .step::after {
+        display: none;
     }
 }
