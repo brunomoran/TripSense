@@ -38,10 +38,10 @@ const Header = () => {
                         <Link to="/">Ayuda</Link>
                     </div>
                     <div className="nav-item">
-                        <Link to="/">Inicia sesión</Link>
+                        <Link to="/login">Inicia sesión</Link>
                     </div>
                     <div className="nav-item">
-                        <Link to="/">Regístrate</Link>
+                        <Link to="/register">Regístrate</Link>
                     </div>
                 </nav>
             </div>
