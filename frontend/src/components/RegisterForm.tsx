@@ -6,7 +6,7 @@ import "../styles/Register.css"
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    userName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -34,7 +34,7 @@ const RegisterForm: React.FC = () => {
     // Llamada a la API backend para registrar el usuario
     try {
       const response = await axios.post("http://localhost:5000/api/auth/register", {
-        name: formData.name,
+        userName: formData.userName,
         email: formData.email,
         password: formData.password,
       })
@@ -59,7 +59,7 @@ const RegisterForm: React.FC = () => {
         <h2>Crea una cuenta</h2>
         {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
-          <input type="text" name="username" placeholder="Nombre de usuario" value={formData.name} onChange={handleChange} required />
+          <input type="text" name="userName" placeholder="Nombre de usuario" value={formData.name} onChange={handleChange} required />
           <input type="email" name="email" placeholder="Correo electrónico" value={formData.email} onChange={handleChange} required />
           <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleChange} required />
           <input type="password" name="confirmPassword" placeholder="Repita contraseña" value={formData.confirmPassword} onChange={handleChange} required />
