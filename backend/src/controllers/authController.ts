@@ -9,18 +9,13 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     try {
         const { userName, email, password } = req.body;
 
-        // Validar los campos
-        if (!userName || !email || !password) {
-            return res.status(400).json({ message: "Todos los campos son obligatorios" });
-        }
-
         // Validar que el correo electrónico no exista en la base de datos
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "El usuario ya existe" });
         }
 
-        // Validar la fortaleza de la contraseña
+        // Crear contraseña hasheada
         const hashedPassword = await bcryptjs.hash(password, 10);
 
         // Crear un nuevo usuario
@@ -53,11 +48,6 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password } = req.body;
-        
-        // Validar los campos
-        if (!email || !password) {
-            return res.status(400).json({ message: "Todos los campos son obligatorios" });
-        }
 
         // Buscar el usuario por correo electrónico
         const user = await User.findOne({ email });
