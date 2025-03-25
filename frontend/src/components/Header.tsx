@@ -25,7 +25,7 @@ const Header = () => {
                 {/* parte izquierda */}
                 <nav className={`nav-left ${menuOpen ? 'open' : ''}`}>
                     <div className="nav-item">
-                        <Link to="/">Prepara tu viaje</Link>
+                        <Link to="/travel_preparation">Prepara tu viaje</Link>
                     </div>
                     <div className="nav-item">
                         <Link to="/">Chatea con nuestra GuIA</Link>
