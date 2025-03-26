@@ -1,5 +1,7 @@
 import React from 'react'
 
+import "../styles/SearchBar.css"
+
 type Props = {
     placeholder: string;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
