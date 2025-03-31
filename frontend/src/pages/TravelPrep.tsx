@@ -3,7 +3,9 @@ import Footer from '../components/Footer';
 import SearchBar from '../components/SearchBar';
 import FilterDropdown from '../components/FilterDropdown';
 import Map from '../components/Map';
-import POIList from '../components/POIList';
+import ListItems from '../components/ListItems';
+
+import { POI } from '../types/ListItem';
 
 import "../styles/TravelPrep.css";
 
@@ -13,6 +15,29 @@ type Props = {
 }
 
 const TravelPrep = (props: Props) => {
+  const POIList = [
+    {
+      id: 1,
+      name: "Parc Güell",
+      description: "Un parque público con jardines y arquitectura de Antoni Gaudí.",
+      imageUrl: "https://example.com/parc-guell.jpg",
+      location: { lat: 41.4145, lng: 2.1527 },
+      category: "Parque"
+    },
+    {
+      id: 2,
+      name: "Sagrada Familia",
+      description: "Una basílica católica diseñada por Antoni Gaudí.",
+      imageUrl: "https://example.com/sagrada-familia.jpg",
+      location: { lat: 41.4036, lng: 2.1744 },
+      category: "Monumento"
+    }
+  ]
+
+  const handlePoiClick = (poi: POI) => {
+    console.log(`Clicked on Point Of Interest: ${poi.name}`);
+  }
+
   return (
     <>
       <Header />
@@ -26,7 +51,11 @@ const TravelPrep = (props: Props) => {
         <div className="content-section">
           <div className="left-column">
             <FilterDropdown />
-            <POIList />
+            <ListItems<POI>
+              items={POIList}
+              onItemClick={handlePoiClick}
+              title={`Puntos de interés en ${'cityname'}`}
+              emptyMessage='No hay puntos de interés disponibles para esta ubicación.' />
           </div>
           <Map />
         </div>
