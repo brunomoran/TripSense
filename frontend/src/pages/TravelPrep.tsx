@@ -18,7 +18,7 @@ const TravelPrep = (props: Props) => {
   const POIList = [
     {
       id: 1,
-      name: "Parc Güell",
+      name: "Park Güell",
       description: "Un parque público con jardines y arquitectura de Antoni Gaudí.",
       imageUrl: "https://example.com/parc-guell.jpg",
       location: { lat: 41.4145, lng: 2.1527 },

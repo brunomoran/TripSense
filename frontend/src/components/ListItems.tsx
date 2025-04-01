@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListItem } from '../types/ListItem'
-
+import '../styles/ListItems.css'
 
 interface ListItemsProps<T extends ListItem> {
     items: T[];
