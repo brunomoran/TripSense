@@ -64,7 +64,17 @@ const Map = ({
                 map.current = null;
             }
         };
-    }, [initialCoordinates, initialZoom]);
+    }, []);
+
+    useEffect(() => {
+        if (map.current && initialCoordinates) {
+            map.current.flyTo({
+                center: initialCoordinates,
+                zoom: initialZoom,
+                essential: true // this animation is considered essential with respect to prefers-reduced-motion
+            });
+        }
+    }, [initialCoordinates])
 
     return (
         <div className="map-wrapper">
