@@ -1,22 +1,26 @@
-import React from 'react'
+import { useState } from "react";
 
 import "../styles/SearchBar.css"
 
 type Props = {
     placeholder: string;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onSearch: (searchText: string) => void;
+    isLoading?: boolean;
 }
 
-const SearchBar = (props: Props) => {
+const SearchBar = ({ placeholder, onSearch, isLoading = false }: Props) => {
+  const [searchText, setSearchText] = useState("");
+
   return (
     <div className="search-bar-container">
       <input
         type="text"
-        placeholder={props.placeholder}
-        onChange={props.onChange}
+        placeholder={placeholder}
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
         className="search-bar-input"
       />
-      <button className="search-bar-button">Buscar</button>
+      <button className="search-bar-button" onClick={() => onSearch(searchText)}>Buscar</button>
     </div>
   )
 }

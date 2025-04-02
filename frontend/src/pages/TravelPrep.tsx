@@ -6,10 +6,13 @@ import SearchBar from '../components/SearchBar';
 import FilterDropdown from '../components/FilterDropdown';
 import Map from '../components/Map';
 import ListItems from '../components/ListItems';
+import mapboxgl from 'mapbox-gl';
 
 import { POI } from '../types/ListItem';
 
 import "../styles/TravelPrep.css";
+
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 type Props = {
   isLoggedIn: boolean;
@@ -17,7 +20,7 @@ type Props = {
 }
 
 const TravelPrep = (props: Props) => {
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
   
   // datos de ejemplo para los puntos de interés
   const POIList = [
@@ -46,11 +49,29 @@ const TravelPrep = (props: Props) => {
   const handleUseCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        setUserLocation([position.coords.longitude, position.coords.latitude]);
+        setMapCoordinates([position.coords.longitude, position.coords.latitude]);
         console.log("Ubicación actual:", position.coords.longitude, position.coords.latitude);
       }, (error) => {
         console.error("Error al obtener la ubicación:", error);
       });
+    }
+  }
+
+  const handleSearch = async (searchText: string) => {
+    if (!searchText.trim()) return;
+
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json?access_token=${mapboxgl.accessToken}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.features.length > 0) {
+        const [longitude, latitude] = data.features[0].center;
+        setMapCoordinates([longitude, latitude]);
+      } else {
+        console.log("No se encontraron resultados para la búsqueda.");
+      }
+    } catch (error) {
+      console.error("Error al buscar la ubicación:", error);
     }
   }
 
@@ -59,7 +80,7 @@ const TravelPrep = (props: Props) => {
       <Header />
       <div className="travel-prep-container">
         <div className='search-section'>
-          <SearchBar placeholder="Barcelona" onChange={() => console.log("Content changed")} />
+          <SearchBar placeholder="Barcelona" onSearch={handleSearch} />
           <p className='location-text'>O prueba a</p>
           <button className='location-button' onClick={handleUseCurrentLocation}>Usar tu ubicación actual</button>
         </div>
@@ -73,7 +94,7 @@ const TravelPrep = (props: Props) => {
               title={`Puntos de interés en ${'cityname'}`}
               emptyMessage='No hay puntos de interés disponibles para esta ubicación.' />
           </div>
-          <Map initialCoordinates={userLocation || [2.1744, 41.4036]}/>
+          <Map initialCoordinates={mapCoordinates || [2.1744, 41.4036]}/>
         </div>
       </div>
       <Footer />
