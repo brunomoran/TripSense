@@ -76,6 +76,23 @@ const Map = ({
         }
     }, [initialCoordinates])
 
+    useEffect(() => {
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
+
+        if (map.current && markers.length > 0) {
+            console.log("Añadiendo marcadores al mapa:", markers);
+            markers.forEach(({ id, coordinates, popupContent }) => {
+                const marker = new mapboxgl.Marker()
+                    .setLngLat(coordinates)
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent || ""))
+                    .addTo(map.current!);
+
+                markersRef.current.push(marker);
+            });
+        }
+    }, [markers]);
+
     return (
         <div className="map-wrapper">
             <div ref={mapContainer} className="map-container"></div>
