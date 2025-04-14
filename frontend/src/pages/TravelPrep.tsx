@@ -28,7 +28,7 @@ const POI_CATEGORIES = [
   { id: 'cafe', label: 'Cafés', emoji: '☕' }
 ];
 
-const SEARCH_RADIUS = 5000; // Radio de búsqueda en metros
+const SEARCH_RADIUS = 50000; // Radio de búsqueda en metros
 
 const TravelPrep = (props: Props) => {
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
