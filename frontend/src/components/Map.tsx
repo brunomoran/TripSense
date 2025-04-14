@@ -77,6 +77,23 @@ const Map = ({
     }, [initialCoordinates])
 
     useEffect(() => {
+        if (!map.current || !mapLoaded) return;
+
+        markersRef.current.forEach(marker => marker.remove());
+        markersRef.current = [];
+
+        markers.forEach(({ coordinates, popupContent }) => {
+            const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent || "");
+            const marker = new mapboxgl.Marker()
+                .setLngLat(coordinates)
+                .setPopup(popup)
+                .addTo(map.current!);
+            
+            markersRef.current.push(marker);
+        });
+    }, [markers, mapLoaded]);
+
+    useEffect(() => {
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
