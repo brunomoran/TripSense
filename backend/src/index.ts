@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
+import mapboxRoutes from "./routes/mapboxRoutes";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 5001;
 
 // Rutas
 app.use("/api/auth", authRoutes);
+app.use("/api/mapbox", mapboxRoutes);
 
 app.get("/", (req, res) => {
   res.send("API funcionando!");
