@@ -28,7 +28,7 @@ const POI_CATEGORIES = [
   { id: 'cafe', label: 'Cafés', emoji: '☕' }
 ];
 
-const SEARCH_RADIUS = 50000; // Radio de búsqueda en metros
+const API_BASE_URL = 'http://localhost:5000/api/map';
 
 const TravelPrep = (props: Props) => {
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
@@ -49,22 +49,25 @@ const TravelPrep = (props: Props) => {
         const coordinates: [number, number] = [position.coords.longitude, position.coords.latitude];
         setMapCoordinates(coordinates);
         
-        // Obtener el nombre de la ubicación actual mediante geocodificación inversa
+        // Usar el endpoint del backend para la geocodificación inversa
         try {
-          const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${mapboxgl.accessToken}`
-          );
+          const response = await fetch(`${API_BASE_URL}/reverse-geocode`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              longitude: coordinates[0],
+              latitude: coordinates[1]
+            })
+          });
+          
           const data = await response.json();
-          if (data.features && data.features.length > 0) {
-            // Buscar la característica que sea una ciudad o población
-            const cityFeature = data.features.find((f: any) => 
-              f.place_type.includes('place') || 
-              f.place_type.includes('locality') ||
-              f.place_type.includes('region')
-            );
-            
-            setCityName(cityFeature ? cityFeature.text : 'Ubicación actual');
+          
+          if (response.ok) {
+            setCityName(data.name);
           } else {
+            console.error("Error al obtener el nombre de la ubicación:", data.message);
             setCityName('Ubicación actual');
           }
         } catch (error) {
@@ -72,7 +75,7 @@ const TravelPrep = (props: Props) => {
           setCityName('Ubicación actual');
         }
         
-        await fetchAllPOIsNearby(coordinates);
+        await fetchPOIsFromBackend(coordinates);
       }, (error) => {
         console.error("Error al obtener la ubicación:", error);
         setIsLoading(false);
@@ -85,23 +88,26 @@ const TravelPrep = (props: Props) => {
     setIsLoading(true);
 
     try {
-      // Obtener las coordenadas del lugar buscado
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchText)}.json?access_token=${mapboxgl.accessToken}&types=place,locality,region`;
-      const response = await fetch(url);
+      // Usar el endpoint del backend para la geocodificación
+      const response = await fetch(`${API_BASE_URL}/geocode`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ searchText })
+      });
+      
       const data = await response.json();
       
-      if (data.features && data.features.length > 0) {
-        const [longitude, latitude] = data.features[0].center;
-        const coordinates: [number, number] = [longitude, latitude];
+      if (response.ok) {
+        const coordinates: [number, number] = data.coordinates;
         setMapCoordinates(coordinates);
-        
-        // Actualizar el nombre de la ciudad
-        setCityName(data.features[0].text);
+        setCityName(data.name);
         
         // Buscar puntos de interés cercanos
-        await fetchAllPOIsNearby(coordinates);
+        await fetchPOIsFromBackend(coordinates);
       } else {
-        console.log("No se encontraron resultados para la búsqueda.");
+        console.error("Error al buscar la ubicación:", data.message);
         setPOIList([]);
         setIsLoading(false);
       }
@@ -111,86 +117,36 @@ const TravelPrep = (props: Props) => {
     }
   }
 
-  // Función para buscar POIs para todas las categorías
-  const fetchAllPOIsNearby = async (coordinates: [number, number]) => {
+  // Función para buscar POIs usando el backend
+  const fetchPOIsFromBackend = async (coordinates: [number, number]) => {
     setIsLoading(true);
     
     try {
-      let allPOIs: POI[] = [];
-      let idCounter = 0;
+      const response = await fetch(`${API_BASE_URL}/pois-nearby`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          longitude: coordinates[0],
+          latitude: coordinates[1]
+        })
+      });
       
-      // Buscar POIs para cada categoría
-      for (const category of POI_CATEGORIES) {
-        const categoryPOIs = await fetchPOIsForCategory(coordinates, category.id, idCounter);
-        idCounter += categoryPOIs.length;
-        allPOIs = [...allPOIs, ...categoryPOIs];
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log(`Se encontraron ${data.count} puntos de interés en total`);
+        setPOIList(data.pois);
+      } else {
+        console.error("Error al buscar puntos de interés:", data.message);
+        setPOIList([]);
       }
-      
-      // Actualizar la lista de POIs
-      console.log(`Se encontraron ${allPOIs.length} puntos de interés en total`);
-      setPOIList(allPOIs);
     } catch (error) {
       console.error("Error al buscar puntos de interés:", error);
       setPOIList([]);
     } finally {
       setIsLoading(false);
-    }
-  }
-  
-  // Función para buscar POIs de una categoría específica
-  const fetchPOIsForCategory = async (coordinates: [number, number], categoryId: string, startId: number = 0): Promise<POI[]> => {
-    try {
-      // Usamos la API de Mapbox para buscar POIs cercanos por categoría
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${categoryId}.json?proximity=${coordinates[0]},${coordinates[1]}&access_token=${mapboxgl.accessToken}&limit=10`;
-      
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (!data.features || data.features.length === 0) {
-        return [];
-      }
-      
-      // Filtrar POIs que estén realmente cerca (dentro del radio de búsqueda)
-      const category = POI_CATEGORIES.find(c => c.id === categoryId);
-      const poiLabel = category ? category.label : 'Punto de interés';
-      const poiEmoji = category ? category.emoji : '📍';
-      
-      const pois = data.features
-        .filter((feature: any) => {
-          // Calcular distancia aproximada (en grados - una aproximación simple)
-          const dx = feature.center[0] - coordinates[0];
-          const dy = feature.center[1] - coordinates[1];
-          const distanceInDegrees = Math.sqrt(dx * dx + dy * dy);
-          
-          // Convertir aproximadamente a km (1 grado ≈ 111 km en el ecuador)
-          const distanceInKm = distanceInDegrees * 111;
-          return distanceInKm <= (SEARCH_RADIUS / 1000);
-        })
-        .map((feature: any, index: number) => {
-          // Extraer dirección del place_name
-          const fullAddress = feature.place_name;
-          // Quitar el nombre del POI del inicio de la dirección
-          const address = fullAddress.replace(feature.text, '').replace(/^,\s*/, '');
-          
-          return {
-            id: startId + index,
-            name: `${poiEmoji} ${feature.text}`,
-            description: address,
-            imageUrl: "", // Podría integrarse con otra API para obtener imágenes
-            location: { 
-              lat: feature.center[1], 
-              lng: feature.center[0] 
-            },
-            category: poiLabel
-          };
-        });
-      
-      console.log(`Se encontraron ${pois.length} ${poiLabel.toLowerCase()}`);
-      return pois;
-      
-    } catch (error) {
-      console.error(`Error al buscar ${categoryId}:`, error);
-      return [];
     }
   }
   

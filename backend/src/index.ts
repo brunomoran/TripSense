@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5001;
 
 // Rutas
 app.use("/api/auth", authRoutes);
-app.use("/api/mapbox", mapboxRoutes);
+app.use("/api/map", mapboxRoutes);
 
 app.get("/", (req, res) => {
   res.send("API funcionando!");
