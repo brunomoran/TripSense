@@ -14,4 +14,7 @@ export interface POI extends ListItem {
         lat: number;
         lng: number;
     };
+    address?: string;
+    externalId?: string;
+    source?: string;
 }
