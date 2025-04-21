@@ -1,9 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useEffect, useRef, useState } from "react";
 import "../styles/Map.css";
-
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 interface Props {
     initialCoordinates?: [number, number]; // [longitude, latitude]
@@ -20,106 +16,88 @@ const Map = ({
     initialZoom = 12,
     markers = []
 }: Props) => {
-    const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<mapboxgl.Map | null>(null);
-    const markersRef = useRef<Array<mapboxgl.Marker>>([]);
+    const mapRef = useRef<HTMLDivElement>(null);
+    const mapInstance = useRef<google.maps.Map | null>(null);
+    const markersRef = useRef<google.maps.Marker[]>([]);
     const [mapLoaded, setMapLoaded] = useState(false);
 
+    // Cargar script de Google Maps si no está aún
     useEffect(() => {
-        if (!mapboxgl.accessToken) {
-            console.error("¡Error! No se ha configurado el token de Mapbox. Comprueba tu archivo .env");
-            return;
-        }
-        
-        if (mapContainer.current && !map.current) {
-            console.log("Inicializando mapa con token");
-            try {
-                map.current = new mapboxgl.Map({
-                    container: mapContainer.current,
-                    style: 'mapbox://styles/mapbox/dark-v11',
-                    center: initialCoordinates,
-                    zoom: initialZoom,
-                    attributionControl: false,
-                })
-    
-                map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-                map.current.addControl(new mapboxgl.AttributionControl(), 'bottom-right');
-
-                map.current.on('load', () => {
-                    console.log("Mapa cargado");
-                    setMapLoaded(true);
-                });
-
-                map.current.on('error', (error) => {
-                    console.error("Error al cargar el mapa:", error);
-                });
-            } catch (error) {
-                console.error("Error al inicializar el mapa:", error);
+        const loadGoogleMapsScript = () => {
+            if (window.google?.maps) {
+                setMapLoaded(true);
+                return;
             }
-        }
 
-        return () => {
-            if (map.current) {
-                map.current.remove();
-                map.current = null;
-            }
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_API_KEY}&libraries=places`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => setMapLoaded(true);
+            document.head.appendChild(script);
         };
+
+        loadGoogleMapsScript();
     }, []);
 
     useEffect(() => {
-        if (map.current && initialCoordinates) {
-            map.current.flyTo({
-                center: initialCoordinates,
+        if (mapLoaded && mapRef.current && !mapInstance.current) {
+            mapInstance.current = new google.maps.Map(mapRef.current, {
+                center: { lng: initialCoordinates[0], lat: initialCoordinates[1] },
                 zoom: initialZoom,
-                essential: true // this animation is considered essential with respect to prefers-reduced-motion
+                mapTypeId: "roadmap"
             });
         }
-    }, [initialCoordinates])
+    }, [mapLoaded]);
 
     useEffect(() => {
-        if (!map.current || !mapLoaded) return;
+        if (!mapInstance.current) return;
 
-        markersRef.current.forEach(marker => marker.remove());
+        mapInstance.current.setCenter({
+            lng: initialCoordinates[0],
+            lat: initialCoordinates[1]
+        });
+        mapInstance.current.setZoom(initialZoom);
+    }, [initialCoordinates, initialZoom]);
+
+    useEffect(() => {
+        if (!mapInstance.current) return;
+
+        // Limpiar marcadores anteriores
+        markersRef.current.forEach(marker => marker.setMap(null));
         markersRef.current = [];
 
+        // Añadir nuevos marcadores
         markers.forEach(({ coordinates, popupContent }) => {
-            const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent || "");
-            const marker = new mapboxgl.Marker()
-                .setLngLat(coordinates)
-                .setPopup(popup)
-                .addTo(map.current!);
-            
+            const marker = new google.maps.Marker({
+                position: { lng: coordinates[0], lat: coordinates[1] },
+                map: mapInstance.current
+            });
+
+            if (popupContent) {
+                const infoWindow = new google.maps.InfoWindow({
+                    content: popupContent
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(mapInstance.current, marker);
+                });
+            }
+
             markersRef.current.push(marker);
         });
-    }, [markers, mapLoaded]);
-
-    useEffect(() => {
-        markersRef.current.forEach(marker => marker.remove());
-        markersRef.current = [];
-
-        if (map.current && markers.length > 0) {
-            console.log("Añadiendo marcadores al mapa:", markers);
-            markers.forEach(({ id, coordinates, popupContent }) => {
-                const marker = new mapboxgl.Marker()
-                    .setLngLat(coordinates)
-                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent || ""))
-                    .addTo(map.current!);
-
-                markersRef.current.push(marker);
-            });
-        }
     }, [markers]);
 
     return (
         <div className="map-wrapper">
-            <div ref={mapContainer} className="map-container"></div>
+            <div ref={mapRef} className="map-container"></div>
             {!mapLoaded && (
                 <div className="map-loading-overlay">
                     <p>Cargando mapa...</p>
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default Map
+export default Map;
