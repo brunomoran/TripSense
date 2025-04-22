@@ -5,6 +5,7 @@ import '../styles/ListItems.css'
 interface ListItemsProps<T extends ListItem> {
     items: T[];
     onItemClick?: (item: T) => void;
+    onAddItinerary?: (item: T) => void;
     emptyMessage?: string;
     title?: string;
     className?: string;
@@ -13,6 +14,7 @@ interface ListItemsProps<T extends ListItem> {
 const ListItems = <T extends ListItem>({
     items,
     onItemClick,
+    onAddItinerary,
     emptyMessage = "No hay elementos para mostrar",
     title,
     className = ""
@@ -40,10 +42,16 @@ const ListItems = <T extends ListItem>({
                                 <p className="item-description">{item.description}</p>
                                 {item.category && <p className="item-category">{item.category}</p>}
 
-                                {'location' in item && (
-                                    <p className="item-location">
-                                        <small>Coordenadas: {item.location.lat.toFixed(4)}, {item.location.lng.toFixed(4)}</small>
-                                    </p>
+                                {onAddItinerary && (
+                                    <button
+                                        className="add-itinerary-button"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // Evita que el evento de clic se propague al contenedor padre
+                                            onAddItinerary(item);
+                                        }}
+                                    >
+                                        ➕ Añadir al itinerario
+                                    </button>
                                 )}
                             </div>
                         </div>

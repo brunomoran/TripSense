@@ -34,6 +34,7 @@ const TravelPrep = (props: Props) => {
   const [cityName, setCityName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedPOIs, setSelectedPOIs] = useState<POI[]>([]);
 
   const handlePoiClick = (poi: POI) => {
     setMapCoordinates([poi.location.lng, poi.location.lat]);
@@ -117,6 +118,36 @@ const TravelPrep = (props: Props) => {
     setActiveCategory(category);
   }
 
+  const handleAddToItinerary = (poi: POI) => {
+    if (!selectedPOIs.find(p => p.id === poi.id)) {
+      setSelectedPOIs(prev => [...prev, poi]);
+    }
+  }
+
+  const handleSaveItinerary = async () => {
+    if (selectedPOIs.length === 0) {
+      return alert("Añade al menos una actividad al itinerario.");
+    }
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/save-itinerary`, {
+        name: `Itinerario en ${cityName}`,
+        activities: selectedPOIs.map(poi => ({
+          name: poi.name,
+          description: poi.description,
+          location: poi.location,
+          category: poi.category
+        }))
+      })
+      if (response.status === 200) {
+        alert("Itinerario guardado con éxito.");
+      }
+    } catch (error) {
+      console.error("Error al guardar el itinerario:", error);
+      alert("Error al guardar el itinerario. Inténtalo de nuevo más tarde.");
+    }
+  }
+
   return (
     <>
       <Header />
@@ -167,6 +198,7 @@ const TravelPrep = (props: Props) => {
             <ListItems<POI>
               items={getFilteredPOIs()}
               onItemClick={handlePoiClick}
+              onAddItinerary={handleAddToItinerary}
               title={isLoading ? 'Buscando lugares...' : `Lugares de interés ${activeCategory ? `(${activeCategory})` : ''}`}
               emptyMessage={isLoading
                 ? 'Buscando puntos de interés...'
@@ -184,6 +216,19 @@ const TravelPrep = (props: Props) => {
             }))}
           />
         </div>
+        {selectedPOIs.length > 0 && (
+          <div className="itinerary-preview">
+            <h3>📝 Itinerario en preparación:</h3>
+            <ul>
+              {selectedPOIs.map((poi) => (
+                <li key={poi.id}>{poi.name} - {poi.category}</li>
+              ))}
+            </ul>
+            <button className="save-itinerary-button" onClick={handleSaveItinerary}>
+              💾 Guardar itinerario
+            </button>
+          </div>
+        )}
       </div>
       <Footer />
     </>

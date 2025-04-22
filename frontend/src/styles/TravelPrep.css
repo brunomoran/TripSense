@@ -45,8 +45,93 @@
 }
 
 .left-column {
-    flex: 1;
+    flex: 1.5;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    max-width: 40%;
+}
+
+/* Selector de categorías */
+.category-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.category-filters button {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: #2c2c2c;
+    color: #fff;
+    border: 1px solid #444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.category-filters button.active-filter {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Estilo para el itinerario en preparación */
+.itinerary-preview {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.itinerary-preview h3 {
+    margin-top: 0;
+    color: #d1eaff;
+}
+
+.itinerary-preview ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.itinerary-preview li {
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+}
+
+.save-itinerary-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.save-itinerary-button:hover {
+    background-color: #218838;
+}
+
+.selected-location {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.selected-location h2 {
+    color: #d1eaff;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+/* Responsive styles */
+@media (max-width: 900px) {
+    .content-section {
+        flex-direction: column;
+    }
+    
+    .left-column {
+        max-width: 100%;
+    }
 }
