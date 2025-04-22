@@ -30,9 +30,9 @@ export const geocode = async (req: Request, res: Response, next: NextFunction) =
                 fullName: feature.place_name
             };
 
-            return res.status(200).json(result);
+            res.status(200).json(result);
         } else {
-            return res.status(404).json({ message: "No se encontraron resultados para la búsqueda" });
+            res.status(404).json({ message: "No se encontraron resultados para la búsqueda" });
         }
     } catch (error) {
         console.error('Error en la geocodificación:', error);
@@ -65,9 +65,9 @@ export const reverseGeocode = async (req: Request, res: Response, next: NextFunc
                 }))
             };
 
-            return res.status(200).json(result);
+            res.status(200).json(result);
         } else {
-            return res.status(404).json({ message: "No se encontraron resultados para la búsqueda" });
+            res.status(404).json({ message: "No se encontraron resultados para la búsqueda" });
         }
     } catch (error) {
         console.error('Error en la geocodificación inversa:', error);
@@ -147,7 +147,7 @@ const fetchPOIsForCategory = async (coordinates: [number, number], categoryId: s
         allPOIs = [...allPOIs, ...categoryPOIs];
       }
       
-      return res.status(200).json({
+      res.status(200).json({
         count: allPOIs.length,
         pois: allPOIs
       });
