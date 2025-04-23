@@ -26,7 +26,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 const TravelPrep = () => {
   const { isLoggedIn, user } = useAuth();
-  
+
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
   const [POIList, setPOIList] = useState<POI[]>([]);
   const [cityName, setCityName] = useState<string>('');
@@ -54,6 +54,7 @@ const TravelPrep = () => {
           });
 
           setCityName(data.name);
+          setSelectedPOIs([]); // Limpiar POIs seleccionados al usar ubicación actual
         } catch (error) {
           console.error("Error al obtener el nombre de la ubicación:", error);
           setCityName('Ubicación actual');
@@ -76,6 +77,7 @@ const TravelPrep = () => {
       const coordinates: [number, number] = data.coordinates;
       setMapCoordinates(coordinates);
       setCityName(data.name);
+      setSelectedPOIs([]); // Limpiar POIs seleccionados al buscar una nueva ubicación
 
       // Buscar puntos de interés cercanos
       await fetchPOIsFromBackend(coordinates);
@@ -121,6 +123,10 @@ const TravelPrep = () => {
       setSelectedPOIs(prev => [...prev, poi]);
     }
   }
+
+  const handleRemoveFromItinerary = (poiId: number) => {
+    setSelectedPOIs(prev => prev.filter(p => p.id !== poiId));
+  };
 
   const handleSaveItinerary = async () => {
     if (!isLoggedIn) {
@@ -244,7 +250,15 @@ const TravelPrep = () => {
             <h3>📝 Itinerario en preparación:</h3>
             <ul>
               {selectedPOIs.map((poi) => (
-                <li key={poi.id}>{poi.name} - {poi.category}</li>
+                <li key={poi.id}>
+                  {poi.name} - {poi.category}
+                  <button
+                    onClick={() => handleRemoveFromItinerary(Number(poi.id))}
+                    className="remove-poi-button"
+                  >
+                    ❌
+                  </button>
+                </li>
               ))}
             </ul>
             <button className="save-itinerary-button" onClick={handleSaveItinerary}>
