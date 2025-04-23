@@ -22,10 +22,13 @@ const Header = () => {
                         <Link to="/travel_preparation">Prepara tu viaje</Link>
                     </div>
                     <div className="nav-item">
-                        <Link to="/">Chatea con nuestra GuIA</Link>
+                        <Link to="/">Planifica con nuestra IA</Link>
                     </div>
                     <div className="nav-item">
                         <Link to="/">Comunidad</Link>
+                    </div>
+                    <div className="nav-item">
+                        <Link to="/my_itineraries">Mis Itinerarios</Link>
                     </div>
                 </nav>
 

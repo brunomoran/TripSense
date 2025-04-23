@@ -4,7 +4,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import TravelPrep from './pages/TravelPrep'
-import Itinerary from './pages/Itinerary'
+import MyItineraries from './pages/MyItineraries'
 import { AuthProvider } from './context/AuthContext'
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/travel_preparation" element={<TravelPrep />} />
+          <Route path="/my_itineraries" element={<MyItineraries />} />
         </Routes>
       </Router>
     </AuthProvider>
