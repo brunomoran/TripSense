@@ -1,18 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import '../styles/Header.css';
 
 const Header = () => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState<any>(null);
-
-    useEffect(() => {
-        const user = localStorage.getItem('user');
-        if (user) {
-            setCurrentUser(JSON.parse(user));
-        }
-    }, [])
+    const { isLoggedIn, user, logout } = useAuth();
 
     return (
         <header className="header">
@@ -45,10 +39,10 @@ const Header = () => {
                     <div className="nav-item">
                         <Link to="/">Ayuda</Link>
                     </div>
-                    {currentUser ? (
-                        <div className="nav-item">
-                            <Link to="/profile">Perfil</Link>
-                        </div>
+                    {isLoggedIn ? (
+                            <div className="nav-item">
+                                <Link to="/profile">Perfil</Link>
+                            </div>
                     ) : (
                         <>
                             <div className="nav-item">

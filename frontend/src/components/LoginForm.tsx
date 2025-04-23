@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import "../styles/LoginForm.css"
 import axios from "axios"
+import { useAuth } from "../context/AuthContext"
 
 const LoginForm: React.FC = () => {
     const [email, setEmail] = useState("")
@@ -9,6 +10,7 @@ const LoginForm: React.FC = () => {
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
+    const { login } = useAuth()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -22,9 +24,8 @@ const LoginForm: React.FC = () => {
                 password,
             });
 
-            // Guardar el token en localStorage para mantener la sesión
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
+            // Guardar el token en el almacenamiento local
+            login(response.data.user, response.data.token)
 
             // Redirigir al usuario a la página de inicio
             navigate("/")

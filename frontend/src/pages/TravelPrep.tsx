@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -12,11 +13,6 @@ import { POI } from '../types/ListItem';
 
 import "../styles/TravelPrep.css";
 
-type Props = {
-  isLoggedIn: boolean;
-  setIsLoggedIn: (isLoggedIn: boolean) => void;
-}
-
 const POI_CATEGORIES = [
   { id: 'restaurant', label: 'Restaurantes', emoji: '🍽️' },
   { id: 'hotel', label: 'Hoteles', emoji: '🏨' },
@@ -28,7 +24,9 @@ const POI_CATEGORIES = [
 
 const API_BASE_URL = 'http://localhost:5000/api/map';
 
-const TravelPrep = (props: Props) => {
+const TravelPrep = () => {
+  const { isLoggedIn, user } = useAuth();
+  
   const [mapCoordinates, setMapCoordinates] = useState<[number, number] | null>(null);
   const [POIList, setPOIList] = useState<POI[]>([]);
   const [cityName, setCityName] = useState<string>('');
@@ -125,13 +123,18 @@ const TravelPrep = (props: Props) => {
   }
 
   const handleSaveItinerary = async () => {
+    if (!isLoggedIn) {
+      return alert("Inicia sesión para guardar el itinerario.");
+    }
+
     if (selectedPOIs.length === 0) {
       return alert("Añade al menos una actividad al itinerario.");
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/save-itinerary`, {
+      const response = await axios.post(`${API_BASE_URL}/`, {
         name: `Itinerario en ${cityName}`,
+        userId: user.id,
         activities: selectedPOIs.map(poi => ({
           name: poi.name,
           description: poi.description,

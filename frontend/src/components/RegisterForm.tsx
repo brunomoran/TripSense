@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import axios from "axios"
+import { useAuth } from "../context/AuthContext"
 
 import "../styles/Register.css"
 
@@ -14,6 +15,7 @@ const RegisterForm: React.FC = () => {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,9 +41,9 @@ const RegisterForm: React.FC = () => {
         password: formData.password,
       })
       console.log("Registro exitoso:", response.data)
-      // Guardar el token en localStorage para mantener la sesión
-      localStorage.setItem("token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      
+      // Guardar el token en el almacenamiento local
+      login(response.data.user, response.data.token)
 
       // Redirigir al usuario a la página de inicio
       navigate("/")
