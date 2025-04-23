@@ -22,7 +22,7 @@ const POI_CATEGORIES = [
   { id: 'cafe', label: 'Cafés', emoji: '☕' }
 ];
 
-const API_BASE_URL = 'http://localhost:5000/api/map';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const TravelPrep = () => {
   const { isLoggedIn, user } = useAuth();
@@ -48,7 +48,7 @@ const TravelPrep = () => {
 
         // Usar el endpoint del backend para la geocodificación inversa
         try {
-          const { data } = await axios.post(`${API_BASE_URL}/reverse-geocode`, {
+          const { data } = await axios.post(`${API_BASE_URL}/map/reverse-geocode`, {
             longitude: coordinates[0],
             latitude: coordinates[1]
           });
@@ -72,7 +72,7 @@ const TravelPrep = () => {
     setIsLoading(true);
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/geocode`, { searchText });
+      const { data } = await axios.post(`${API_BASE_URL}/map/geocode`, { searchText });
       const coordinates: [number, number] = data.coordinates;
       setMapCoordinates(coordinates);
       setCityName(data.name);
@@ -91,7 +91,7 @@ const TravelPrep = () => {
     setIsLoading(true);
 
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/pois-nearby`, {
+      const { data } = await axios.post(`${API_BASE_URL}/map/pois-nearby`, {
         longitude: coordinates[0],
         latitude: coordinates[1]
       });
@@ -132,17 +132,37 @@ const TravelPrep = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/`, {
+      const response = await axios.post(`${API_BASE_URL}/itineraries`, {
         name: `Itinerario en ${cityName}`,
+        description: `Lugares interesantes para visitar en ${cityName}`,
+        destination: cityName,
+        startDate: new Date().toISOString().split('T')[0], // Fecha de hoy
+        endDate: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0], // Mañana
         userId: user.id,
-        activities: selectedPOIs.map(poi => ({
-          name: poi.name,
-          description: poi.description,
-          location: poi.location,
-          category: poi.category
-        }))
-      })
-      if (response.status === 200) {
+        days: [
+          {
+            id: Math.random().toString(36).substring(2, 9), // ID único
+            date: new Date().toISOString().split('T')[0], // Fecha de hoy
+            activities: selectedPOIs.map(poi => ({
+              id: Math.random().toString(36).substring(2, 9), // ID único
+              poi: {
+                id: poi.id,
+                name: poi.name,
+                description: poi.description,
+                location: poi.location,
+                category: poi.category,
+                imageUrl: poi.imageUrl || ""
+              },
+              startTime: "10:00", // Hora de inicio predeterminada
+              endTime: "11:00",   // Hora de fin predeterminada
+              notes: ""
+            }))
+          }
+        ],
+        isPublic: false
+      });
+
+      if (response.status === 201) {
         alert("Itinerario guardado con éxito.");
       }
     } catch (error) {

@@ -17,7 +17,6 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/travel_preparation" element={<TravelPrep />} />
-          <Route path='/itinerary' element={<Itinerary />} />
         </Routes>
       </Router>
     </AuthProvider>
