@@ -1,0 +1,78 @@
+.my-itineraries-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.my-itineraries-container h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.itinerary-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.itinerary-card {
+    background-color: #0000;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.itinerary-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.itinerary-card p {
+    margin: 0.3rem 0;
+    color: #ffff;
+}
+
+.itinerary-card .buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.itinerary-card .buttons button {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.itinerary-card .buttons button:first-child {
+    background-color: #007bff;
+    color: white;
+}
+
+.itinerary-card .buttons button:first-child:hover {
+    background-color: #0056b3;
+}
+
+.itinerary-card .buttons button:last-child {
+    color: white;
+}
+
+.itinerary-card .buttons button:last-child:hover {
+    background-color: #b02a37;
+}
+
+@media (max-width: 600px) {
+    .itinerary-card .buttons {
+        flex-direction: column;
+    }
+
+    .itinerary-card .buttons button {
+        width: 100%;
+    }
+}

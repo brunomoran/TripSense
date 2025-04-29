@@ -147,10 +147,8 @@ const TravelPrep = () => {
         userId: user.id,
         days: [
           {
-            id: Math.random().toString(36).substring(2, 9), // ID único
             date: new Date().toISOString().split('T')[0], // Fecha de hoy
             activities: selectedPOIs.map(poi => ({
-              id: Math.random().toString(36).substring(2, 9), // ID único
               poi: {
                 id: poi.id,
                 name: poi.name,

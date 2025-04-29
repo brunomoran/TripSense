@@ -6,6 +6,8 @@ import Footer from "../components/Footer"
 
 import { Itinerary } from "../types/Itinerary"
 
+import "../styles/MyItineraries.css"
+
 type Props = {}
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -16,24 +18,70 @@ const MyItineraries = (props: Props) => {
 
   useEffect(() => {
     if (isLoggedIn) {
-        fetchItineraries()
+      fetchItineraries()
     }
   }, [])
 
-    const fetchItineraries = async () => {
-        try {
-            const { data } = await axios.get(`${API_BASE_URL}/itineraries/user/${user.id}`)
-            setItineraries(data)
-            setIsLoading(false)
-        } catch (error) {
-            console.error("Error fetching itineraries:", error)
-        } finally {
-            setIsLoading(false)
-        }
+  const fetchItineraries = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE_URL}/itineraries/user/${user.id}`)
+      setItineraries(data)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error fetching itineraries:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este itinerario?")) {
+      return
     }
 
-    return (
-    <div>MyItineraries</div>
+    try {
+      await axios.delete(`${API_BASE_URL}/itineraries/${id}`)
+      setItineraries(itineraries.filter(itinerary => itinerary._id !== id))
+    } catch (error) {
+      console.error("Error al eliminar el itinerario:", error)
+      alert("Error al eliminar el itinerario. Por favor, inténtalo de nuevo más tarde.")
+    }
+  }
+
+  return (
+    <>
+      <Header />
+      <div className="my-itineraries-container">
+        <h2>Tus itinerarios</h2>
+        {!isLoggedIn ? (
+          <p>Debes iniciar sesión para ver tus itinerarios guardados</p>
+        ) : isLoading ? (
+          <p>Cargando itinerarios...</p>
+        ) : itineraries.length === 0 ? (
+          <p>No tienes itinerarios guardados aún.</p>
+        ) : (
+          <ul className="itinerary-list">
+            {itineraries.map(itinerary => (
+              <li key={itinerary._id} className="itinerary-card">
+                <h3>{itinerary.name}</h3>
+                <p>Destino: {itinerary.destination}</p>
+                <p>Desde: {itinerary.startDate} hasta {itinerary.endDate}</p>
+                <div className="buttons">
+                  <button onClick={() => console.log('Edit itinerary: ', itinerary._id)}>
+                    ✏️ Editar
+                  </button>
+                  <button onClick={() => handleDelete(itinerary._id)}>
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+        }
+      </div>
+      <Footer />
+    </>
   )
 }
 

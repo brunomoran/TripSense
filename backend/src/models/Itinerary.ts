@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import { POI } from "../types/pointOfInterest";
 
 export interface ItineraryActivity {
-    id: string;
+    id?: string;
     poi: POI;
     startTime: string;
     endTime: string;
@@ -10,7 +10,7 @@ export interface ItineraryActivity {
 }
 
 export interface ItineraryDay {
-    id: string;
+    id?: string;
     date: string;
     activities: ItineraryActivity[];
 }
@@ -56,7 +56,7 @@ const ItinerarySchema = new Schema<IItinerary>({
             date: String,
             activities: [
                 {
-                    id: String,
+                    id: { type: String, required: false },
                     poi: POISchema,
                     startTime: String,
                     endTime: String,

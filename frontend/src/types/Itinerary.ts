@@ -1,7 +1,7 @@
 import { POI } from './ListItem';
 
 export interface Itinerary {
-    id?: string;
+    _id: string;
     name: string;
     description: string;
     destination: string;
@@ -15,13 +15,15 @@ export interface Itinerary {
 }
 
 export interface ItineraryDay {
-    id: string;
+    _id?: string;
+    id?: string;
     date: string;
     activities: ItineraryActivity[];
 }
 
 export interface ItineraryActivity {
-    id: string;
+    _id?: string;
+    id?: string;
     poi: POI;
     startTime: string;
     endTime: string;
