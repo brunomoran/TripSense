@@ -7,6 +7,7 @@ import Footer from "../components/Footer"
 import { Itinerary } from "../types/Itinerary"
 
 import "../styles/MyItineraries.css"
+import { Link } from "react-router-dom"
 
 type Props = {}
 const API_BASE_URL = 'http://localhost:5000/api'
@@ -63,7 +64,9 @@ const MyItineraries = (props: Props) => {
           <ul className="itinerary-list">
             {itineraries.map(itinerary => (
               <li key={itinerary._id} className="itinerary-card">
-                <h3>{itinerary.name}</h3>
+                <Link to={`/itinerary/${itinerary._id}`}>
+                  <h3>{itinerary.name}</h3>
+                </Link>
                 <p>Destino: {itinerary.destination}</p>
                 <p>Desde: {itinerary.startDate} hasta {itinerary.endDate}</p>
                 <div className="buttons">
