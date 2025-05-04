@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "../context/AuthContext"
+import { getApiUrl } from "../config/api"
 import axios from "axios"
 import Header from "../components/Header"
 import Footer from "../components/Footer"
@@ -10,7 +11,7 @@ import "../styles/MyItineraries.css"
 import { Link } from "react-router-dom"
 
 type Props = {}
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = getApiUrl();
 
 const MyItineraries = (props: Props) => {
   const { isLoggedIn, user } = useAuth()

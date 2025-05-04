@@ -3,12 +3,13 @@ import { useParams } from "react-router-dom"
 import axios from "axios"
 import Header from "../components/Header"
 import Footer from "../components/Footer"
+import { getApiUrl } from "../config/api"
 
 import { Itinerary } from "../types/Itinerary"
 
 import "../styles/ItineraryDetail.css"
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = getApiUrl()
 
 type Props = {}
 

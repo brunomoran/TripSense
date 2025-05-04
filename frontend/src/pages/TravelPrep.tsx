@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -22,7 +23,7 @@ const POI_CATEGORIES = [
   { id: 'cafe', label: 'Cafés', emoji: '☕' }
 ];
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = getApiUrl();
 
 const TravelPrep = () => {
   const { isLoggedIn, user } = useAuth();
