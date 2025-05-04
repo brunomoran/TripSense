@@ -1,0 +1,104 @@
+.itinerary-detail-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.itinerary-detail-container h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.destination {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.dates {
+    text-align: center;
+    font-size: 1rem;
+    color: #777;
+    margin-bottom: 2rem;
+}
+
+.day-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border-left: 4px solid #3498db;
+    border-radius: 8px;
+}
+
+.day-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+.activities-list {
+    list-style: none;
+    padding: 0;
+}
+
+.activity-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #3498db;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.activity-item strong {
+    font-size: 1.1rem;
+}
+
+.activity-item span {
+    display: block;
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+.activity-item em {
+    display: block;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.itinerary-detail-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding: 10px;
+}
+
+.itinerary-detail-actions button {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.edit-button {
+    background-color: #007bff;
+    color: white;
+}
+.edit-button:hover {
+    background-color: #0056b3;
+}
+
+.delete-button {
+    color: white;
+}
+.delete-button:hover {
+    background-color: #a02030;
+}
+
+.goback-button {
+    color: white;
+}
+.goback-button:hover {
+    background-color: #24aa41;
+}

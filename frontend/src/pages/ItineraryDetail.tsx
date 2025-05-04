@@ -6,41 +6,58 @@ import Footer from "../components/Footer"
 
 import { Itinerary } from "../types/Itinerary"
 
+import "../styles/ItineraryDetail.css"
+
 const API_BASE_URL = 'http://localhost:5000/api'
 
 type Props = {}
 
 const ItineraryDetail = (props: Props) => {
-    const { id } = useParams<{ id: string }>()
-    const [itinerary, setItinerary] = useState<Itinerary | null>(null)
-    const [isLoading, setIsLoading] = useState<boolean>(true)
+  const { id } = useParams<{ id: string }>()
+  const [itinerary, setItinerary] = useState<Itinerary | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
-    useEffect(() => {
-        if (!id) return;
-        fetchItinerary();
-    }, [id])
+  useEffect(() => {
+    if (!id) return;
+    fetchItinerary();
+  }, [id])
 
-    const fetchItinerary = async () => {
-        try {
-            const response = await axios.get(`${API_BASE_URL}/itineraries/${id}`)
-            setItinerary(response.data)
-        } catch (error) {
-            console.error("Error fetching itinerary:", error)
-        } finally {
-            setIsLoading(false)
-        }
+  const fetchItinerary = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/itineraries/${id}`)
+      setItinerary(response.data)
+    } catch (error) {
+      console.error("Error fetching itinerary:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este itinerario?")) {
+      return
     }
 
-    if (isLoading) {
-        return <p>Cargando itinerario...</p>
+    try {
+      await axios.delete(`${API_BASE_URL}/itineraries/${id}`)
+      alert("Itinerario eliminado con éxito")
+      window.history.back()
+    } catch (error) {
+      console.error("Error al eliminar el itinerario:", error)
+      alert("Error al eliminar el itinerario. Por favor, inténtalo de nuevo más tarde.")
     }
+  }
 
-    if (!itinerary) {
-        return <p>No se encontró el itinerario</p>
-    }
+  if (isLoading) {
+    return <p>Cargando itinerario...</p>
+  }
 
-    return (
-        <>
+  if (!itinerary) {
+    return <p>No se encontró el itinerario</p>
+  }
+
+  return (
+    <>
       <Header />
       <div className="itinerary-detail-container">
         <h1>{itinerary.name}</h1>
@@ -64,9 +81,14 @@ const ItineraryDetail = (props: Props) => {
           </div>
         ))}
       </div>
+      <div className="itinerary-detail-actions">
+        <button onClick={() => window.location.href = `/itinerary/${itinerary._id}/edit`} className="edit-button">✏️ Editar</button>
+        <button onClick={() => handleDelete(itinerary._id)} className="delete-button">🗑️ Eliminar</button>
+        <button onClick={() => window.history.back} className="goback-button">⬅️ Volver</button>
+      </div>
       <Footer />
     </>
-    )
+  )
 }
 
 export default ItineraryDetail

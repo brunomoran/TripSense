@@ -70,7 +70,7 @@ const MyItineraries = (props: Props) => {
                 <p>Destino: {itinerary.destination}</p>
                 <p>Desde: {itinerary.startDate} hasta {itinerary.endDate}</p>
                 <div className="buttons">
-                  <button onClick={() => console.log('Edit itinerary: ', itinerary._id)}>
+                  <button onClick={() => window.location.href = `/itinerary/${itinerary._id}/edit`}>
                     ✏️ Editar
                   </button>
                   <button onClick={() => handleDelete(itinerary._id)}>
