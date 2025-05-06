@@ -5,6 +5,8 @@ import { Itinerary } from '../types/Itinerary'
 import { getApiUrl } from '../config/api'
 import Footer from '../components/Footer'
 
+import '../styles/ItineraryEdit.css'
+
 import axios from 'axios'
 
 type Props = {}
