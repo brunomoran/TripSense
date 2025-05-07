@@ -120,3 +120,37 @@ export const getPOIsNearby = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const getPOIsByCity = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const city = req.body.city || req.query.city;
+    if (!city) {
+      res.status(400).json({ message: "Falta el nombre de la ciudad" });
+    }
+
+    const apiKey = res.locals.googleMapsApiKey;
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${apiKey}`;
+    const geocodeResponse = await fetch(geocodeUrl);
+    const geocodeData = await geocodeResponse.json();
+
+    if (!geocodeData.results || geocodeData.results.length === 0) {
+      res.status(404).json({ message: "Ciudad no encontrada" });
+    }
+
+    const location = geocodeData.results[0].geometry.location;
+    const coordinates: [number, number] = [location.lng, location.lat];
+
+    let allPOIs: POI[] = [];
+    let idCounter = 0;
+
+    for (const category of POI_CATEGORIES) {
+      const pois = await fetchPOIsForCategory(coordinates, category.id, idCounter, apiKey);
+      idCounter += pois.length;
+      allPOIs.push(...pois);
+    }
+
+    res.status(200).json({ count: allPOIs.length, pois: allPOIs });
+  } catch (error) {
+    console.error("Error en getPOIsByCity:", error);
+    next(error);
+  }
+};

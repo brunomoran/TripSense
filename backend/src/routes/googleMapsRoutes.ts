@@ -1,5 +1,5 @@
 import express from 'express';
-import { geocode, reverseGeocode, getPOIsNearby } from '../controllers/googleMapsController';
+import { geocode, reverseGeocode, getPOIsNearby, getPOIsByCity } from '../controllers/googleMapsController';
 import {
     verifyGoogleMapsApiKey,
     validateCoordinates,
@@ -15,5 +15,6 @@ router.use(verifyGoogleMapsApiKey);
 router.post('/geocode', validateSearchText, geocode);
 router.post('/reverse-geocode', validateCoordinates, reverseGeocode);
 router.post('/pois-nearby', validateCoordinates, getPOIsNearby);
+router.post('/places', getPOIsByCity);
 
 export default router;

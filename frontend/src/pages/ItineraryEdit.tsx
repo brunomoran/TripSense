@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import Header from '../components/Header'
 import { useParams } from 'react-router-dom'
 import { Itinerary } from '../types/Itinerary'
+import { POI } from '../types/ListItem'
 import { getApiUrl } from '../config/api'
+import Header from '../components/Header'
 import Footer from '../components/Footer'
+import Modal from '../components/Modal'
 
 import '../styles/ItineraryEdit.css'
 
@@ -17,6 +19,8 @@ const ItineraryEdit = (props: Props) => {
   const { id } = useParams<{ id: string }>()
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [showModal, setShowModal] = useState<boolean>(false)
+  const [pois, setPois] = useState<POI[]>([])
 
   useEffect(() => {
     if (id) {
@@ -32,6 +36,17 @@ const ItineraryEdit = (props: Props) => {
       console.error("Error fetching itinerary:", error);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  const fetchPoisForCity = async (city: string) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/map/places`, { city })
+      console.log("POIs:", response.data)
+      setPois(response.data.pois)
+    } catch (error) {
+      console.error("Error fetching POIs:", error)
+      setPois([])
     }
   }
 
@@ -70,8 +85,71 @@ const ItineraryEdit = (props: Props) => {
     }
   }
 
-  if (isLoading) return <p>Cargando itinerario</p>
-  if (!itinerary) return <p>Itinerario no encontrado</p>
+  const handleOpenModal = () => {
+    if (itinerary?.destination) {
+      fetchPoisForCity(itinerary.destination)
+      setShowModal(true)
+    }
+  }
+
+  const handleAddPoiToItinerary = (poi: POI) => {
+    if (!itinerary || !itinerary.days || itinerary.days.length === 0) return;
+
+    // Generar un ID único para la actividad
+    const activityId = 'act_' + Math.random().toString(36).substring(2, 9);
+
+    // Tomamos el primer día del itinerario para simplificar (podrías permitir seleccionar un día)
+    const firstDay = itinerary.days[0];
+
+    const updatedDays = itinerary.days.map(day => {
+      if (day._id === firstDay._id) {
+        return {
+          ...day,
+          activities: [
+            ...day.activities,
+            {
+              id: activityId,
+              poi: poi,
+              startTime: "10:00", // Hora predeterminada
+              endTime: "11:00", // Hora predeterminada
+              notes: ""
+            }
+          ]
+        };
+      }
+      return day;
+    });
+
+    setItinerary({
+      ...itinerary,
+      days: updatedDays
+    });
+
+    setShowModal(false);
+  };
+
+  if (isLoading) return (
+    <>
+      <Header />
+      <div className="loading-container">
+        <p>Cargando itinerario...</p>
+      </div>
+      <Footer />
+    </>
+  )
+
+  if (!itinerary) return (
+    <>
+      <Header />
+      <div className="error-container">
+        <p>No se encontró el itinerario</p>
+        <button onClick={() => navigate('/my_itineraries')} className="back-button">
+          Volver a mis itinerarios
+        </button>
+      </div>
+      <Footer />
+    </>
+  )
 
   return (
     <>
@@ -87,6 +165,33 @@ const ItineraryEdit = (props: Props) => {
           {itinerary?.isPublic
             ? 'Hacer este itinerario privado' : 'Hacer este itinerario público'}
         </label>
+
+        <button className="add-activity-button" onClick={handleOpenModal}>
+          ➕ Añadir actividad
+        </button>
+
+        <Modal show={showModal} onClose={() => setShowModal(false)}>
+          <h2>Puntos de interés en {itinerary.destination}</h2>
+          {pois.length === 0 ? (
+            <p>Cargando puntos de interés...</p>
+          ) : (
+            <ul className="poi-list">
+              {pois.map((poi) => (
+                <li key={poi.id || poi._id || Math.random()} className="poi-item">
+                  <strong>{poi.name}</strong>
+                  <p>{poi.description}</p>
+                  <span className="poi-category">{poi.category}</span>
+                  <button
+                    className="add-poi-button"
+                    onClick={() => handleAddPoiToItinerary(poi)}
+                  >
+                    ➕ Añadir al itinerario
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
 
         {itinerary?.days.map((day) => (
           <div key={day._id} className="day-edit-section">
