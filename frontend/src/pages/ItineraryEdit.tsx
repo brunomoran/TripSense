@@ -15,12 +15,19 @@ type Props = {}
 
 const API_BASE_URL = getApiUrl()
 
+const transportOptions = [
+  { id: "walking", label: "A pie" },
+  { id: "driving", label: "Coche" },
+  { id: "transit", label: "Transporte público" },
+];
+
 const ItineraryEdit = (props: Props) => {
   const { id } = useParams<{ id: string }>()
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pois, setPois] = useState<POI[]>([])
+  const [selectedTransport, setSelectedTransport] = useState<string[]>([])
 
   useEffect(() => {
     if (id) {
@@ -77,7 +84,10 @@ const ItineraryEdit = (props: Props) => {
     if (!itinerary) return
 
     try {
-      await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, itinerary)
+      await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, {
+        ...itinerary,
+        transport: selectedTransport
+      })
       alert("Cambios guardados con éxito")
     } catch (error) {
       console.error("Error al guardar cambios:", error)
@@ -127,6 +137,15 @@ const ItineraryEdit = (props: Props) => {
 
     setShowModal(false);
   };
+
+  const handleTransportChange = (mode: string) => {
+    setSelectedTransport(prev =>
+      prev.includes(mode)
+        ? prev.filter(m => m !== mode)
+        : [...prev, mode]
+    );
+  };
+
 
   if (isLoading) return (
     <>
@@ -212,6 +231,24 @@ const ItineraryEdit = (props: Props) => {
             <button onClick={() => handleSaveChanges} className="add-activity-button">➕ Añadir actividad</button>
           </div>
         ))}
+
+        <div className="transport-selection">
+          <h3>Selecciona los medios de transporte permitidos:</h3>
+          <div className="transport-options">
+            {transportOptions.map(option => (
+              <label key={option.id} className="transport-option">
+                <input
+                  type="checkbox"
+                  value={option.id}
+                  checked={selectedTransport.includes(option.id)}
+                  onChange={() => handleTransportChange(option.id)}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
         <button className="save-itinerary-button">💾 Guardar cambios</button>
       </div>
       <Footer />
