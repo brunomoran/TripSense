@@ -7,6 +7,12 @@ export interface ItineraryActivity {
     startTime: string;
     endTime: string;
     notes?: string;
+    routeToNext?: {
+        duration: string;
+        distance: string;
+        mode: string;
+        fullRoute?: any; // Ruta completa
+    }
 }
 
 export interface ItineraryDay {
@@ -26,6 +32,12 @@ export interface IItinerary extends Document {
     isPublic: boolean;
     createdAt: Date;
     updatedAt?: Date;
+    transportModes: string[];
+    routeToNext: {
+        duration: string;
+        distance: string;
+        mode: string;
+    }
 }
 
 const POISchema = new Schema<POI>({
@@ -68,6 +80,15 @@ const ItinerarySchema = new Schema<IItinerary>({
     isPublic: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: Date,
+    transportModes: {
+        type: [String],
+        default: [],
+    },
+    routeToNext: {
+        duration: String,
+        distance: String,
+        mode: String,
+    },
 });
 
 const Itinerary = mongoose.model<IItinerary>('Itinerary', ItinerarySchema);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Itinerary } from '../types/Itinerary'
 import { POI } from '../types/ListItem'
 import { getApiUrl } from '../config/api'
@@ -24,6 +24,7 @@ const transportOptions = [
 const ItineraryEdit = (props: Props) => {
   const { id } = useParams<{ id: string }>()
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pois, setPois] = useState<POI[]>([])
@@ -39,6 +40,7 @@ const ItineraryEdit = (props: Props) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/itineraries/${id}`);
       setItinerary(response.data);
+      setSelectedTransport(response.data.transportModes || []);
     } catch (error) {
       console.error("Error fetching itinerary:", error);
     } finally {
@@ -86,8 +88,9 @@ const ItineraryEdit = (props: Props) => {
     try {
       await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, {
         ...itinerary,
-        transport: selectedTransport
+        transportModes: selectedTransport
       })
+      await axios.post(`${API_BASE_URL}/itineraries/${itinerary._id}/calculate`)
       alert("Cambios guardados con éxito")
     } catch (error) {
       console.error("Error al guardar cambios:", error)
@@ -249,7 +252,7 @@ const ItineraryEdit = (props: Props) => {
           </div>
         </div>
 
-        <button className="save-itinerary-button">💾 Guardar cambios</button>
+        <button onClick={() => handleSaveChanges()} className="save-itinerary-button">💾 Guardar cambios</button>
       </div>
       <Footer />
     </>
