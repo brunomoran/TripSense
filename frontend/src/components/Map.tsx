@@ -9,17 +9,20 @@ interface Props {
         coordinates: [number, number]; // [longitude, latitude]
         popupContent?: string;
     }>;
+    routes?: string[];
 }
 
 const Map = ({
     initialCoordinates = [2.1744, 41.4036],
     initialZoom = 12,
-    markers = []
+    markers = [],
+    routes = []
 }: Props) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<google.maps.Map | null>(null);
     const markersRef = useRef<google.maps.Marker[]>([]);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const polylinesRef = useRef<google.maps.Polyline[]>([]);
 
     // Cargar script de Google Maps si no está aún
     useEffect(() => {
@@ -30,7 +33,7 @@ const Map = ({
             }
 
             const script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_API_KEY}&libraries=places`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_API_KEY}&libraries=places,geometry`;
             script.async = true;
             script.defer = true;
             script.onload = () => setMapLoaded(true);
@@ -87,6 +90,29 @@ const Map = ({
             markersRef.current.push(marker);
         });
     }, [markers]);
+
+    useEffect(() => {
+        if (!mapInstance.current) return;
+
+        // Limpiar polilíneas anteriores
+        polylinesRef.current.forEach(polyline => polyline.setMap(null));
+        polylinesRef.current = [];
+
+        if (!routes) return;
+
+        routes.forEach(encodedPath => {
+            const decodedPath = window.google.maps.geometry.encoding.decodePath(encodedPath);
+            const polyline = new google.maps.Polyline({
+                path: decodedPath,
+                geodesic: true,
+                strokeColor: "#4285F4",
+                strokeOpacity: 0.8,
+                strokeWeight: 4,
+                map: mapInstance.current
+            });
+            polylinesRef.current.push(polyline);
+        });
+    }, [routes])
 
     return (
         <div className="map-wrapper">

@@ -1,18 +1,20 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { POI } from "../types/pointOfInterest";
 
+export interface Route {
+    duration: string;
+    distance: string;
+    mode: string;
+    fullRoute?: any; // Ruta completa
+}
+
 export interface ItineraryActivity {
     id?: string;
     poi: POI;
     startTime: string;
     endTime: string;
     notes?: string;
-    routeToNext?: {
-        duration: string;
-        distance: string;
-        mode: string;
-        fullRoute?: any; // Ruta completa
-    }
+    routeToNext?: Route;
 }
 
 export interface ItineraryDay {
@@ -33,10 +35,15 @@ export interface IItinerary extends Document {
     createdAt: Date;
     updatedAt?: Date;
     transportModes: string[];
-    routeToNext: {
-        duration: string;
-        distance: string;
-        mode: string;
+    completeRoute?: {
+        totalDistance: string;
+        totalDuration: string;
+        daysRoutes: Array<{
+            date: string;
+            totalDistance: string;
+            totalDuration: string;
+            segments: Route[];
+        }>;
     }
 }
 
@@ -53,6 +60,13 @@ const POISchema = new Schema<POI>({
     address: String,
     externalId: String,
     source: String,
+}, { _id: false });
+
+const RouteSchema = new Schema({
+    duration: { type: String, required: true },
+    distance: { type: String, required: true },
+    mode: { type: String, required: true },
+    fullRoute: { type: Schema.Types.Mixed }
 }, { _id: false });
 
 const ItinerarySchema = new Schema<IItinerary>({
@@ -84,10 +98,17 @@ const ItinerarySchema = new Schema<IItinerary>({
         type: [String],
         default: [],
     },
-    routeToNext: {
-        duration: String,
-        distance: String,
-        mode: String,
+    completeRoute: {
+        totalDistance: String,
+        totalDuration: String,
+        daysRoutes: [
+            {
+                date: String,
+                totalDistance: String,
+                totalDuration: String,
+                segments: [RouteSchema],
+            },
+        ],
     },
 });
 

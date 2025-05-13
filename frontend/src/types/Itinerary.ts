@@ -1,5 +1,12 @@
 import { POI } from './ListItem';
 
+export interface Route {
+    duration: string;
+    distance: string;
+    mode: string;
+    fullRoute?: any; // Ruta completa
+}
+
 export interface Itinerary {
     _id: string;
     name: string;
@@ -12,6 +19,17 @@ export interface Itinerary {
     isPublic: boolean;
     createdAt?: string;
     updatedAt?: string;
+    transportModes: string[];
+    completeRoute?: {
+        totalDistance: string;
+        totalDuration: string;
+        daysRoutes: Array<{
+            date: string;
+            totalDistance: string;
+            totalDuration: string;
+            segments: Route[];
+        }>;
+    }
 }
 
 export interface ItineraryDay {
@@ -28,6 +46,7 @@ export interface ItineraryActivity {
     startTime: string;
     endTime: string;
     notes?: string;
+    routeToNext?: Route;
 }
 
 export interface ItineraryResponse {

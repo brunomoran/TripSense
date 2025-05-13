@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import axios from "axios"
 import Header from "../components/Header"
 import Footer from "../components/Footer"
+import Map from "../components/Map"
 import { getApiUrl } from "../config/api"
 
 import { Itinerary } from "../types/Itinerary"
@@ -49,6 +50,28 @@ const ItineraryDetail = (props: Props) => {
     }
   }
 
+  const extractRoutePolylines = (): string[] => {
+    if (!itinerary) return []
+
+    const polylines: string[] = []
+
+    // Si el itinerario tiene una ruta completa con segmentos por día
+    if (itinerary.completeRoute?.daysRoutes) {
+      // Recorrer cada día en la ruta completa
+      itinerary.completeRoute.daysRoutes.forEach(dayRoute => {
+        // Recorrer cada segmento de ruta en el día
+        dayRoute.segments.forEach(segment => {
+          if (segment.fullRoute?.overview_polyline?.points) {
+            polylines.push(segment.fullRoute.overview_polyline.points);
+          }
+        });
+      });
+    }
+    console.log("Polylines from completeRoute:", polylines);
+    return polylines;
+
+  }
+
   if (isLoading) {
     return <p>Cargando itinerario...</p>
   }
@@ -86,6 +109,35 @@ const ItineraryDetail = (props: Props) => {
         <button onClick={() => window.location.href = `/itinerary/${itinerary._id}/edit`} className="edit-button">✏️ Editar</button>
         <button onClick={() => handleDelete(itinerary._id)} className="delete-button">🗑️ Eliminar</button>
         <button onClick={() => window.history.back} className="goback-button">⬅️ Volver</button>
+      </div>
+      <div className="route-map">
+        <h2>Mapa del itinerario</h2>
+        <Map
+          initialCoordinates={[
+            itinerary.days[0]?.activities[0]?.poi.location.lng ?? 0,
+            itinerary.days[0]?.activities[0]?.poi.location.lat ?? 0
+          ]}
+          markers={itinerary.days.flatMap(day =>
+            day.activities.map(activity => ({
+              id: activity.id,
+              coordinates: [
+                activity.poi.location.lng,
+                activity.poi.location.lat
+              ],
+              popupContent: `
+                <div class="marker-popup">
+                  <h3>${activity.poi.name}</h3>
+                  <p>${activity.poi.description || ''}</p>
+                  <p><strong>Horario:</strong> ${activity.startTime} - ${activity.endTime}</p>
+                  ${activity.routeToNext ?
+                  `<p><strong>Ruta siguiente:</strong> ${activity.routeToNext.distance}, ${activity.routeToNext.duration}</p>
+                     <p><strong>Modo:</strong> ${activity.routeToNext.mode}</p>` : ''}
+                </div>
+              `
+            }))
+          )}
+          routes={extractRoutePolylines()}
+        />
       </div>
       <Footer />
     </>
