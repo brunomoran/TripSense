@@ -1,10 +1,14 @@
-import { Schema, Document, model } from "mongoose";
+import { Schema, Document, model, Types } from "mongoose";
 
 // Definición de la interfaz para el modelo User
 export interface IUser extends Document {
   userName: string;
   email: string;
   password: string;
+  profilePicture?: string;
+  bio?: string;
+  followers: Types.ObjectId[];
+  following: Types.ObjectId[]; 
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +30,24 @@ const userSchema: Schema = new Schema<IUser>({
     type: String,
     required: true,
   },
+  profilePicture: {
+    type: String,
+    default: "",
+  },
+  bio: {
+    type: String,
+    default: "",
+  },
+  followers: [{
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: [],
+  }],
+  following: [{
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: [],
+  }],
 }, {
   timestamps: true,
 });
