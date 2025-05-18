@@ -44,7 +44,7 @@ const Header = () => {
                     </div>
                     {isLoggedIn ? (
                             <div className="nav-item">
-                                <Link to="/profile">Perfil</Link>
+                                <Link to={`/user/${user.userName}`}>Perfil</Link>
                             </div>
                     ) : (
                         <>

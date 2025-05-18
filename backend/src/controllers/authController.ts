@@ -79,6 +79,43 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+export const getUserByUserName = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { userName } = req.params;
+    
+    if (!userName) {
+      return res.status(400).json({ message: "Se requiere el nombre de usuario" });
+    }
+    
+    // Buscar el usuario por nombre de usuario
+    const user = await User.findOne({ userName })
+      .select("-password") // Excluir la contraseña de la respuesta
+      .populate("followers", "userName profilePicture")
+      .populate("following", "userName profilePicture");
+    
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    
+    // Comprobar si el usuario solicitante sigue al usuario encontrado
+    let isFollowing = false;
+    if (req.user && req.user.id) {
+      isFollowing = user.followers.some(
+        follower => follower._id.toString() === req.user.id
+      );
+    }
+    
+    res.status(200).json({
+      user,
+      isFollowing
+    });
+    
+  } catch (error) {
+    console.error("Error en getUserByUserName:", error);
+    next(error);
+  }
+}
+
 export const getMe = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
