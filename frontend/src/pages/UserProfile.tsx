@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { getApiUrl } from '../config/api'
 
 import axios from 'axios'
+import ProfileHeader from '../components/ProfileHeader'
 
 const API_URL = getApiUrl()
 
@@ -117,7 +118,10 @@ const UserProfile = (props: Props) => {
     if (!profileUser) return <div>Usuario no encontrado</div>
 
     return (
-        <div>UserProfile</div>
+        <>
+            <ProfileHeader />
+            
+        </>
     )
 }
 
