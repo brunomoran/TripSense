@@ -23,7 +23,7 @@ function App() {
           <Route path="/my_itineraries" element={<MyItineraries />} />
           <Route path="/itinerary/:id" element={<ItineraryDetail />} />
           <Route path="/itinerary/:id/edit" element={<ItineraryEdit />} />
-          <Route path="/user/:username" element={<UserProfile />} />
+          <Route path="/user/:userName" element={<UserProfile />} />
         </Routes>
       </Router>
     </AuthProvider>

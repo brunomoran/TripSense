@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Itinerary } from '../types/Itinerary'
-import { ProfileUser } from '../types/user'
+import { ProfileUser } from '../types/User'
 
 import { useAuth } from '../context/AuthContext'
 import { getApiUrl } from '../config/api'
@@ -30,10 +30,18 @@ const UserProfile = (props: Props) => {
         try {
             let userToDisplay: ProfileUser | null = null
             if (isOwnProfile) {
-                const meResponse = await axios.get(`${API_URL}/auth/me`)
+                const meResponse = await axios.get(`${API_URL}/auth/me`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                })
                 userToDisplay = meResponse.data
             } else {
-                const userResponse = await axios.get(`${API_URL}/auth/user/${userName}`)
+                const userResponse = await axios.get(`${API_URL}/auth/user/${userName}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 userToDisplay = userResponse.data
             }
 
@@ -44,7 +52,7 @@ const UserProfile = (props: Props) => {
             );
 
             // Obtener itinerarios del usuario
-            const itinerariesResponse = await axios.get(`${API_URL}/itinerary/user/${userToDisplay?._id}`)
+            const itinerariesResponse = await axios.get(`${API_URL}/itineraries/user/${userToDisplay?._id}`)
             setItineraries(itinerariesResponse.data)
 
             // Mostrar itinerarios públicos si no es el propio perfil
@@ -64,6 +72,7 @@ const UserProfile = (props: Props) => {
             return;
         }
         fetchUserData();
+        setIsLoading(false)
     }, [userName, isLoggedIn, currentUser, isOwnProfile, navigate])
 
     const handleFollowToggle = async () => {
