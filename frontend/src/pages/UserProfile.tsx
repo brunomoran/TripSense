@@ -119,8 +119,13 @@ const UserProfile = (props: Props) => {
 
     return (
         <>
-            <ProfileHeader />
-            
+            <ProfileHeader
+                profileUser={profileUser}
+                itinerariesLength={itineraries.length}
+                isOwnProfile={isOwnProfile}
+                isFollowing={isFollowing}
+            />
+
         </>
     )
 }

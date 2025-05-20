@@ -1,22 +1,38 @@
-import React from 'react'
 import FollowButton from './FollowButton'
 import { ProfileUser } from '../types/User'
-import { useAuth } from '../context/AuthContext'
 
 type Props = {
-    // Define any props you need here
-    profileUser: ProfileUser | null
+    profileUser: ProfileUser,
+    itinerariesLength: number,
+    isOwnProfile: boolean,
+    isFollowing?: boolean
 }
 
-const ProfileHeader = (props: Props) => {
-    const { user: currentUser } = useAuth()
-
-    const isOwnProfile = props.profileUser?._id === currentUser?._id
+const ProfileHeader = ({ profileUser, itinerariesLength, isFollowing, isOwnProfile }: Props) => {
 
     return (
         <>
-            <div>ProfileHeader</div>
-            <FollowButton />
+            <div className="user-profile-header">
+                <img
+                    src={profileUser.profilePicture || "/default-profile.png"}
+                    alt={`${profileUser?.userName}'s profile`}
+                    className="profile-image"
+                />
+                <div className="profile-info">
+                    <h1>{profileUser?.userName}</h1>
+                    <div className="stats">
+                        <span><strong>{profileUser.followers.length}</strong> Seguidores</span>
+                        <span><strong>{profileUser.following.length}</strong> Siguiendo</span>
+                        <span><strong>{itinerariesLength}</strong> Publicaciones</span>
+                    </div>
+                    {!isOwnProfile && (
+                        <FollowButton
+                            userId={profileUser._id}
+                            isFollowing={isFollowing}
+                        />
+                    )}
+                </div>
+            </div>
         </>
     )
 }
