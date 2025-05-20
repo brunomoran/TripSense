@@ -8,6 +8,8 @@ import { getApiUrl } from '../config/api'
 
 import axios from 'axios'
 import ProfileHeader from '../components/ProfileHeader'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 
 const API_URL = getApiUrl()
 
@@ -17,6 +19,11 @@ const UserProfile = (props: Props) => {
     const { userName } = useParams<{ userName: string }>()
     const navigate = useNavigate()
     const { user: currentUser, isLoggedIn } = useAuth()
+
+    console.log('currentUser', currentUser);
+    console.log('isLoggedIn', isLoggedIn);
+    
+    
 
     const [profileUser, setProfileUser] = useState<ProfileUser | null>(null)
     const [itineraries, setItineraries] = useState<Itinerary[]>([])
@@ -43,17 +50,18 @@ const UserProfile = (props: Props) => {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                userToDisplay = userResponse.data
+                userToDisplay = userResponse.data.user
+                setIsFollowing(userResponse.data.isFollowing)
             }
 
             setProfileUser(userToDisplay)
-            // Comprobar si el usuario actual está siguiendo al usuario del perfil
-            setIsFollowing(
-                userToDisplay && currentUser?.following?.some((id: string) => id === userToDisplay._id) || false
-            );
 
             // Obtener itinerarios del usuario
-            const itinerariesResponse = await axios.get(`${API_URL}/itineraries/user/${userToDisplay?._id}`)
+            const itinerariesResponse = await axios.get(`${API_URL}/itineraries/user/${userToDisplay?._id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            })
             setItineraries(itinerariesResponse.data)
 
             // Mostrar itinerarios públicos si no es el propio perfil
@@ -119,13 +127,14 @@ const UserProfile = (props: Props) => {
 
     return (
         <>
+            <Header />
             <ProfileHeader
                 profileUser={profileUser}
                 itinerariesLength={itineraries.length}
                 isOwnProfile={isOwnProfile}
                 isFollowing={isFollowing}
             />
-
+            <Footer />
         </>
     )
 }

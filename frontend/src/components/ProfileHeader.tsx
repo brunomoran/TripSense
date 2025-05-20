@@ -5,7 +5,7 @@ type Props = {
     profileUser: ProfileUser,
     itinerariesLength: number,
     isOwnProfile: boolean,
-    isFollowing?: boolean
+    isFollowing: boolean
 }
 
 const ProfileHeader = ({ profileUser, itinerariesLength, isFollowing, isOwnProfile }: Props) => {
@@ -21,8 +21,8 @@ const ProfileHeader = ({ profileUser, itinerariesLength, isFollowing, isOwnProfi
                 <div className="profile-info">
                     <h1>{profileUser?.userName}</h1>
                     <div className="stats">
-                        <span><strong>{profileUser.followers.length}</strong> Seguidores</span>
-                        <span><strong>{profileUser.following.length}</strong> Siguiendo</span>
+                        <span><strong>{profileUser.followers.length}</strong> Seguidores </span>
+                        <span><strong>{profileUser.following.length}</strong> Siguiendo </span>
                         <span><strong>{itinerariesLength}</strong> Publicaciones</span>
                     </div>
                     {!isOwnProfile && (
