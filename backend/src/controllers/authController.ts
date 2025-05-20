@@ -161,7 +161,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
 export const followUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const currentUserId = req.user.id;
+        const currentUserId = req.user._id;
         const targetUserId = req.params.userId;
 
         if (currentUserId === targetUserId) {

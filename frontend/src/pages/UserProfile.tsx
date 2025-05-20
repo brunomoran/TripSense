@@ -8,6 +8,7 @@ import { getApiUrl } from '../config/api'
 
 import axios from 'axios'
 import ProfileHeader from '../components/ProfileHeader'
+import FollowButton from '../components/FollowButton'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 
@@ -19,11 +20,6 @@ const UserProfile = (props: Props) => {
     const { userName } = useParams<{ userName: string }>()
     const navigate = useNavigate()
     const { user: currentUser, isLoggedIn } = useAuth()
-
-    console.log('currentUser', currentUser);
-    console.log('isLoggedIn', isLoggedIn);
-    
-    
 
     const [profileUser, setProfileUser] = useState<ProfileUser | null>(null)
     const [itineraries, setItineraries] = useState<Itinerary[]>([])
@@ -54,6 +50,10 @@ const UserProfile = (props: Props) => {
                 setIsFollowing(userResponse.data.isFollowing)
             }
 
+            if (!userToDisplay) {
+                throw new Error('Usuario no encontrado');
+            }
+
             setProfileUser(userToDisplay)
 
             // Obtener itinerarios del usuario
@@ -69,30 +69,41 @@ const UserProfile = (props: Props) => {
                 const publicItineraries = itinerariesResponse.data.filter((itinerary: Itinerary) => itinerary.isPublic)
                 setItineraries(publicItineraries)
             }
-        } catch (error) {
-            console.error('Error fetching user data:', error)
-            setError('Error fetching user data')
+        } catch (error: any) {
+            console.error('Error fetching user data:', error);
+            setError(error.response?.data?.message || 'Error obteniendo datos del usuario');
+
+            // Si hay un error de autenticación, redirigir al login
+            if (error.response?.status === 401) {
+                navigate('/login', { state: { from: window.location.pathname } });
+            }
+        } finally {
+            setIsLoading(false)
         }
     }
 
     useEffect(() => {
-        if (!isLoggedIn) {
-            navigate('/login', { state: { from: window.location.pathname } })
-            return;
-        }
         fetchUserData();
-        setIsLoading(false)
-    }, [userName, isLoggedIn, currentUser, isOwnProfile, navigate])
+    }, [userName, isLoggedIn, currentUser])
 
     const handleFollowToggle = async () => {
         if (!profileUser || !currentUser) return;
 
         try {
             const endpoint = isFollowing
-                ? `${API_URL}/auth/${profileUser._id}/unfollow`
-                : `${API_URL}/auth/${profileUser._id}/follow`
+                ? `${API_URL}/auth/users/${profileUser._id}/unfollow`
+                : `${API_URL}/auth/users/${profileUser._id}/follow`
 
-            await axios.post(endpoint)
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No hay token de autenticación');
+            }
+
+            await axios.post(endpoint, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
 
             setIsFollowing(!isFollowing)
 
@@ -121,9 +132,45 @@ const UserProfile = (props: Props) => {
         }
     }
 
-    if (isLoading) return <div>Cargando...</div>
-    if (error) return <div>{error}</div>
-    if (!profileUser) return <div>Usuario no encontrado</div>
+    if (isLoading) {
+        return (
+            <>
+                <Header />
+                <div className="loading-container">
+                    <div className="spinner"></div>
+                    <p>Cargando perfil de usuario...</p>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
+    if (error) {
+        return (
+            <>
+                <Header />
+                <div className="error-container">
+                    <h2>Error</h2>
+                    <p>{error}</p>
+                    <button onClick={() => navigate('/')}>Volver al inicio</button>
+                </div>
+                <Footer />
+            </>
+        );
+    }
+
+    if (!profileUser) {
+        return (
+            <>
+                <Header />
+                <div className="error-container">
+                    <h2>Usuario no encontrado</h2>
+                    <button onClick={() => navigate('/')}>Volver al inicio</button>
+                </div>
+                <Footer />
+            </>
+        );
+    }
 
     return (
         <>
@@ -131,9 +178,13 @@ const UserProfile = (props: Props) => {
             <ProfileHeader
                 profileUser={profileUser}
                 itinerariesLength={itineraries.length}
-                isOwnProfile={isOwnProfile}
-                isFollowing={isFollowing}
             />
+            {!isOwnProfile && (
+                <FollowButton
+                    isFollowing={isFollowing}
+                    handleFollow={handleFollowToggle}
+                />
+            )}
             <Footer />
         </>
     )

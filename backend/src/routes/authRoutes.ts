@@ -11,7 +11,7 @@ router.post("/login", validateLoginInput, login);
 router.get("/me", protect, getMe);
 router.get("/user/:userName", getUserByUserName);
 router.put("/me", validateUserUpdate, updateUser);
-router.post("/users/:userId/follow", authMiddleware, followUser);
-router.post("/users/:userId/unfollow", authMiddleware, unfollowUser);
+router.post("/users/:userId/follow", protect, followUser);
+router.post("/users/:userId/unfollow", protect, unfollowUser);
 
 export default router;
