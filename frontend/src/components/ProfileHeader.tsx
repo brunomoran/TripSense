@@ -1,5 +1,6 @@
-import FollowButton from './FollowButton'
 import { ProfileUser } from '../types/User'
+import defaultProfileImage from '../assets/default_profile.webp'
+import '../styles/UserProfileHeader.css'
 
 type Props = {
     profileUser: ProfileUser,
@@ -12,7 +13,7 @@ const ProfileHeader = ({ profileUser, itinerariesLength }: Props) => {
         <>
             <div className="user-profile-header">
                 <img
-                    src={profileUser.profilePicture || "/default-profile.png"}
+                    src={profileUser.profilePicture || defaultProfileImage}
                     alt={`${profileUser?.userName}'s profile`}
                     className="profile-image"
                 />

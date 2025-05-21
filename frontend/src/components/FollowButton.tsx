@@ -1,5 +1,7 @@
 import React from 'react';
 
+import '../styles/FollowButton.css';
+
 type Props = {
   isFollowing: boolean,
   handleFollow: () => void,

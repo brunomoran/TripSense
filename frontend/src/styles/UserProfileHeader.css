@@ -1,0 +1,25 @@
+.user-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  
+}
+
+.profile-image {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-info h1 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}

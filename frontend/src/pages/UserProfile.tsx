@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Itinerary } from '../types/Itinerary'
+import { ListItem } from '../types/ListItem'
 import { ProfileUser } from '../types/User'
 
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +12,7 @@ import ProfileHeader from '../components/ProfileHeader'
 import FollowButton from '../components/FollowButton'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
+import ListItems from '../components/ListItems'
 
 const API_URL = getApiUrl()
 
@@ -47,6 +49,8 @@ const UserProfile = (props: Props) => {
                     }
                 });
                 userToDisplay = userResponse.data.user
+                console.log(userResponse.data);
+                
                 setIsFollowing(userResponse.data.isFollowing)
             }
 
@@ -185,6 +189,29 @@ const UserProfile = (props: Props) => {
                     handleFollow={handleFollowToggle}
                 />
             )}
+            <div className="user-itineraries">
+                <h2>Itinerarios de {profileUser.userName}</h2>
+                {itineraries.length > 0 ? (
+                    <div className="user-itineraries">
+                        <h2>{isOwnProfile ? 'Tus itinerarios' : 'Itinerarios públicos'}</h2>
+                        <ListItems<ListItem>
+                            items={itineraries.map(itinerary => ({
+                                id: itinerary._id,  // Mapear _id a id
+                                name: itinerary.name,
+                                description: `${itinerary.destination} | ${itinerary.startDate} - ${itinerary.endDate}`,
+                                category: itinerary.isPublic ? 'Público' : 'Privado',
+                                imageUrl: '',
+                                originalItem: itinerary  // Guardar el objeto original para referencia
+                            }))}
+                            onItemClick={(item) => navigate(`/itinerary/${item.originalItem._id}`)}
+                            title=""
+                            className="itinerary-list"
+                        />
+                    </div>
+                ) : (
+                    <p>{isOwnProfile ? 'No has creado itinerarios aún.' : 'Este usuario no tiene itinerarios públicos.'}</p>
+                )}
+            </div>
             <Footer />
         </>
     )
