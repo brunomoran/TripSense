@@ -25,7 +25,7 @@ const Header = () => {
                         <Link to="/">Planifica con nuestra IA</Link>
                     </div>
                     <div className="nav-item">
-                        <Link to="/">Comunidad</Link>
+                        <Link to="/community">Comunidad</Link>
                     </div>
                     <div className="nav-item">
                         <Link to="/my_itineraries">Mis Itinerarios</Link>

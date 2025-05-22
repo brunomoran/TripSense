@@ -8,6 +8,7 @@ import MyItineraries from './pages/MyItineraries'
 import ItineraryDetail from './pages/ItineraryDetail'
 import ItineraryEdit from './pages/ItineraryEdit'
 import UserProfile from './pages/UserProfile'
+import CommunityFeed from './pages/CommunityFeed'
 import { AuthProvider } from './context/AuthContext'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/itinerary/:id" element={<ItineraryDetail />} />
           <Route path="/itinerary/:id/edit" element={<ItineraryEdit />} />
           <Route path="/user/:userName" element={<UserProfile />} />
+          <Route path="/community" element={<CommunityFeed />} />
         </Routes>
       </Router>
     </AuthProvider>
