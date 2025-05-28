@@ -3,9 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
-import mapboxRoutes from "./routes/mapboxRoutes";
 import googleMapsRoutes from "./routes/googleMapsRoutes";
 import itineraryRoutes from "./routes/itineraryRoutes";
+import aiRoutes from "./routes/aiRoutes";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -22,6 +22,7 @@ const PORT = process.env.PORT || 5001;
 app.use("/api/auth", authRoutes);
 app.use("/api/map", googleMapsRoutes);
 app.use("/api/itineraries", itineraryRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.get("/", (req, res) => {
   res.send("API funcionando!");

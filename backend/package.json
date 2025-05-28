@@ -11,6 +11,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@google/genai": "^1.1.0",
     "acorn": "^8.14.0",
     "acorn-walk": "^8.3.4",
     "arg": "^4.1.3",
