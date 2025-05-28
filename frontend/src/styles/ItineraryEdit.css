@@ -40,3 +40,9 @@
 .save-button:hover {
     background-color: #219150;
 }
+
+.transport-selection {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
