@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getApiUrl } from '../config/api';
+import { AiGeneratedItinerary } from '../types/Itinerary';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -25,9 +26,9 @@ const ItineraryAi = (props: Props) => {
         transportModes: [] as string[],
         preferences: ''
     });
-    const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState(null);
-    const [error, setError] = useState('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [result, setResult] = useState<AiGeneratedItinerary | null>(null);
+    const [error, setError] = useState<string>('');
 
     const transportOptions = [
         { id: "walking", label: "A pie" },
@@ -101,15 +102,27 @@ const ItineraryAi = (props: Props) => {
                 preferences: formData.preferences
             });
 
-            // La API de Gemini devuelve directamente los datos del itinerario en response.data
-            // Verificamos que tenga la estructura esperada antes de procesarlo
-            if (response.data && response.data.days) {
-                setResult(response.data);
-                console.log('Itinerario generado:', response.data);
+            // Extraer el contenido JSON de la respuesta de Gemini
+            const textContent = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (textContent) {
+                try {
+                    // Intentar parsear el contenido JSON
+                    const parsedContent = JSON.parse(textContent);
+
+                    if (parsedContent && parsedContent.days) {
+                        setResult(parsedContent as AiGeneratedItinerary);
+                        console.log('Itinerario generado:', parsedContent);
+                    } else {
+                        setError('La respuesta no contiene un itinerario válido');
+                    }
+                } catch (parseError) {
+                    console.error('Error al parsear la respuesta JSON:', parseError);
+                    setError('Error al procesar la respuesta de la IA');
+                }
             } else {
-                // Si no está en el formato esperado, es posible que la respuesta esté anidada
                 console.error('Respuesta de AI en formato inesperado:', response.data);
-                setError('El formato del itinerario generado no es válido. Intente de nuevo.');
+                setError('El formato de la respuesta no es válido. Intente de nuevo.');
             }
         } catch (err: any) {
             setError(err.response?.data?.error || 'Error generando el itinerario');
@@ -128,19 +141,19 @@ const ItineraryAi = (props: Props) => {
                 throw new Error('El itinerario generado no contiene días');
             }
 
-            // Aseguramos que cada día y actividad tenga IDs válidos
+            // Aseguramos que cada día y actividad tenga IDs válidos y la estructura correcta
             const formattedDays = result.days.map(day => ({
                 id: day.id || `day_${Math.random().toString(36).substring(2, 9)}`,
                 date: day.date,
                 activities: day.activities?.map(activity => ({
                     id: activity.id || `act_${Math.random().toString(36).substring(2, 9)}`,
                     poi: {
-                        id: activity.poi.id,
+                        id: activity.poi.id || Math.floor(Math.random() * 10000),
                         name: activity.poi.name,
                         description: activity.poi.description || "",
                         location: {
-                            lat: activity.poi.location.lat,
-                            lng: activity.poi.location.lng
+                            lat: activity.poi.location.lat || 0,
+                            lng: activity.poi.location.lng || 0
                         },
                         category: activity.poi.category || "Punto de interés",
                         imageUrl: activity.poi.imageUrl || ""
@@ -353,13 +366,6 @@ const ItineraryAi = (props: Props) => {
                                     </div>
                                 ))}
                             </div>
-
-                            <details className="json-details">
-                                <summary>Ver JSON completo</summary>
-                                <pre>
-                                    {JSON.stringify(result, null, 2)}
-                                </pre>
-                            </details>
                         </div>
                     </div>
                 )}

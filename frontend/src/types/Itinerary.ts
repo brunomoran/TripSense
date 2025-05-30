@@ -58,3 +58,27 @@ export interface ItinerariesResponse {
     itineraries: Itinerary[];
     count: number;
 }
+
+export interface AiGeneratedItinerary {
+    days: {
+    id?: string;
+    date: string;
+    activities: {
+      id?: string;
+      poi: {
+        id: number | string;
+        name: string;
+        description: string;
+        location: {
+          lat: number;
+          lng: number;
+        };
+        category?: string;
+        imageUrl?: string;
+      };
+      startTime: string;
+      endTime: string;
+      notes?: string;
+    }[];
+  }[];
+}
