@@ -23,6 +23,12 @@ const POI_CATEGORIES = [
   { id: 'cafe', label: 'Cafés', emoji: '☕' }
 ];
 
+const TRANSPORT_OPTIONS = [
+  { id: "walking", label: "A pie", icon: "🚶" },
+  { id: "driving", label: "Coche", icon: "🚗" },
+  { id: "transit", label: "Transporte público", icon: "🚌" },
+];
+
 const API_BASE_URL = getApiUrl();
 
 const TravelPrep = () => {
@@ -34,6 +40,7 @@ const TravelPrep = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedPOIs, setSelectedPOIs] = useState<POI[]>([]);
+  const [transportModes, setTransportModes] = useState<string[]>([]);
 
   const handlePoiClick = (poi: POI) => {
     setMapCoordinates([poi.location.lng, poi.location.lat]);
@@ -164,6 +171,7 @@ const TravelPrep = () => {
             }))
           }
         ],
+        transportModes: transportModes,
         isPublic: false
       });
 
@@ -175,6 +183,14 @@ const TravelPrep = () => {
       alert("Error al guardar el itinerario. Inténtalo de nuevo más tarde.");
     }
   }
+
+  const handleTransportChange = (transportId: string) => {
+    setTransportModes(prev =>
+      prev.includes(transportId)
+        ? prev.filter(id => id !== transportId)
+        : [...prev, transportId]
+    );
+  };
 
   return (
     <>
@@ -260,6 +276,31 @@ const TravelPrep = () => {
                 </li>
               ))}
             </ul>
+
+            {/* Selector de medios de transporte */}
+            <div className="transport-selection">
+              <h4>Medios de transporte:</h4>
+              <div className="transport-options">
+                {TRANSPORT_OPTIONS.map(option => {
+                  const isSelected = transportModes.includes(option.id);
+
+                  return (
+                    <label
+                      key={option.id}
+                      className={`transport-option ${isSelected ? 'selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleTransportChange(option.id)}
+                      />
+                      <span>{option.icon} {option.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
             <button className="save-itinerary-button" onClick={handleSaveItinerary}>
               💾 Guardar itinerario
             </button>
