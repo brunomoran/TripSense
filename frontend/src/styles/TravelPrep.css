@@ -125,6 +125,52 @@
     margin: 0;
 }
 
+.transport-selection {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.transport-selection h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #e0e0e0;
+  font-size: 1rem;
+}
+
+.transport-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.transport-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transport-option:hover {
+  background-color: #3a3a3a;
+}
+
+.transport-option.selected {
+  background-color: #007bff;
+  border-color: #0056b3;
+  color: white;
+}
+
+.transport-option input {
+  margin: 0;
+}
+
 /* Responsive styles */
 @media (max-width: 900px) {
     .content-section {
