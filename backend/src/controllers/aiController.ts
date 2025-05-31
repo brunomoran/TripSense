@@ -96,12 +96,45 @@ const itinerarySchema = {
 
 export const generateItinerary = async (req: Request, res: Response) => {
     try {
-        const { destination, startDate, endDate, transportModes, preferences } = req.body;
+        const { destination, startDate, endDate, transportModes, preferences, availablePois } = req.body;
 
         // Construir el prompt para Gemini
-        const prompt = `Voy a hacer un viaje a ${destination} entre las fechas ${startDate} y ${endDate}. 
-Quiero moverme usando los siguientes modos de transporte: ${transportModes.join(", ")}.
-Ten en cuenta esta información adicional: "${preferences}".`
+        let prompt = `Voy a hacer un viaje a ${destination} entre las fechas ${startDate} y ${endDate}. 
+Quiero moverme usando los siguientes modos de transporte: ${transportModes.join(", ")}.`;
+
+        if (preferences && preferences.trim()) {
+            prompt += `\nTen en cuenta esta información adicional: "${preferences}".`;
+        }
+
+        if (availablePois && availablePois.length > 0) {
+            prompt += `\n\nA continuación te proporciono una lista de puntos de interés específicos de ${destination} que debes considerar para crear el itinerario. Intenta utilizar estos lugares en lugar de inventar otros:\n`;
+
+            let randomPois: any[] = []
+
+            if (availablePois.length <= 30) {
+                randomPois = [...availablePois];
+            } else {
+                // Crear una copia del array para no modificar el original
+                const poisCopy = [...availablePois];
+
+                // Algoritmo Fisher-Yates (o Knuth) para mezclar el array
+                for (let i = poisCopy.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [poisCopy[i], poisCopy[j]] = [poisCopy[j], poisCopy[i]];
+                }
+
+                // Tomar los primeros 30 después de mezclar
+                randomPois = poisCopy.slice(0, 30);
+            }
+
+            // Limitar a un máximo de 30 POIs para no sobrecargar el prompt
+            const limitedPois = availablePois.slice(0, 30);
+            limitedPois.forEach((poi: any, index: number) => {
+                prompt += `${index + 1}. ${poi.name} (${poi.category}): ${poi.description || 'Sin descripción'}\n`;
+            });
+
+            prompt += `\nPor favor, utiliza estos puntos de interés reales en el itinerario generado siempre que sea posible.`;
+        }
 
         const response = await ai.models.generateContent({
             model: "gemini-2.0-flash",

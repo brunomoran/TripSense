@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getApiUrl } from '../config/api';
-import { AiGeneratedItinerary } from '../types/Itinerary';
+import { AiGeneratedItinerary, ItineraryDay, ItineraryActivity } from '../types/Itinerary';
+import { POI } from '../types/ListItem';
 
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -94,12 +95,31 @@ const ItineraryAi = (props: Props) => {
         setLoading(true);
 
         try {
+
+            let poisToUse = []
+
+            try {
+                const poisResponse = await axios.post(`${API_URL}/map/places`, {
+                    city: formData.destination
+                })
+
+                if (poisResponse.data && poisResponse.data.pois) {
+                    poisToUse = poisResponse.data.pois;
+                    console.log(`Se encontraron ${poisToUse.length} puntos de interés en ${formData.destination}`);
+                }
+            } catch (poisError) {
+                console.error('Error al obtener puntos de interés:', poisError);
+                setError('No se pudieron obtener puntos de interés para el destino. Intente de nuevo más tarde.');
+                return;
+            }
+
             const response = await axios.post(`${API_URL}/ai/generate-itinerary`, {
                 destination: formData.destination,
                 startDate: formData.startDate,
                 endDate: formData.endDate,
                 transportModes: formData.transportModes,
-                preferences: formData.preferences
+                preferences: formData.preferences,
+                availablePois: poisToUse
             });
 
             // Extraer el contenido JSON de la respuesta de Gemini
@@ -107,10 +127,35 @@ const ItineraryAi = (props: Props) => {
 
             if (textContent) {
                 try {
-                    // Intentar parsear el contenido JSON
                     const parsedContent = JSON.parse(textContent);
 
                     if (parsedContent && parsedContent.days) {
+                        // Si tenemos POIs reales, podríamos mejorar el itinerario generado
+                        if (poisToUse.length > 0) {
+                            // Intentar enriquecer el itinerario con información más precisa de los POIs
+                            parsedContent.days.forEach((day: ItineraryDay) => {
+                                day.activities.forEach((activity: ItineraryActivity )=> {
+                                    // Buscar si existe un POI similar en nuestra lista
+                                    const matchingPoi = poisToUse.find((poi: POI) =>
+                                        poi.name.toLowerCase().includes(activity.poi.name.toLowerCase()) ||
+                                        activity.poi.name.toLowerCase().includes(poi.name.toLowerCase())
+                                    );
+
+                                    // Si encontramos uno similar, usamos sus datos reales
+                                    if (matchingPoi) {
+                                        activity.poi = {
+                                            ...activity.poi,
+                                            id: matchingPoi.id,
+                                            location: matchingPoi.location,
+                                            category: matchingPoi.category,
+                                            description: matchingPoi.description || activity.poi.description,
+                                            imageUrl: matchingPoi.imageUrl || activity.poi.imageUrl
+                                        };
+                                    }
+                                });
+                            });
+                        }
+
                         setResult(parsedContent as AiGeneratedItinerary);
                         console.log('Itinerario generado:', parsedContent);
                     } else {
