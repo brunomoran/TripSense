@@ -176,7 +176,19 @@ const TravelPrep = () => {
       });
 
       if (response.status === 201) {
-        alert("Itinerario guardado con éxito.");
+        const itineraryId = response.data._id;
+
+        try {
+          await axios.post(`${API_BASE_URL}/itineraries/${itineraryId}/calculate`);
+          alert("Itinerario guardado con éxito y rutas calculadas.");
+          setSelectedPOIs([]); // Limpiar itinerario después de guardar
+          setTransportModes([]); // Limpiar modos de transporte seleccionados
+          
+          window.location.href = `/itinerary/${itineraryId}`; // Redirigir al itinerario guardado	
+        } catch (routeError) {
+          console.error("Error al calcular las rutas del itinerario:", routeError);
+          alert("Itinerario guardado, pero hubo un error al calcular las rutas. Inténtalo de nuevo más tarde.");
+        }
       }
     } catch (error) {
       console.error("Error al guardar el itinerario:", error);
