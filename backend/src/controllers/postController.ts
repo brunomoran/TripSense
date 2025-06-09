@@ -5,7 +5,15 @@ import { Request, Response, NextFunction } from "express";
 
 export const getAllPosts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 }).populate("user", "username").populate("itinerary");
+        // Buscar todos los posts y poblar los campos de usuario e itinerario
+        const posts = await Post.find()
+            .sort({ createdAt: -1 })
+            .populate('user', 'userName profilePicture')
+            .populate({
+                path: 'itinerary',
+                select: 'name destination startDate endDate isPublic days completeRoute',
+            });
+
         res.status(200).json(posts);
         return;
     } catch (error) {

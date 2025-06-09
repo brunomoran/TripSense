@@ -1,0 +1,160 @@
+.community-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.community-container h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #d1eaff;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+  color: #d1eaff;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+  border-radius: 10px;
+  color: #d1eaff;
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.post-card {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.username {
+  font-weight: 500;
+  color: #d1eaff;
+}
+
+.post-date {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.post-description {
+  margin: 0.5rem 0 1rem;
+}
+
+.itinerary-preview {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.itinerary-title {
+  color: #d1eaff;
+  text-decoration: none;
+}
+
+.itinerary-title h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.itinerary-destination, 
+.itinerary-dates,
+.itinerary-days-count,
+.itinerary-distance {
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.destination-icon,
+.date-icon,
+.days-icon,
+.route-icon {
+  margin-right: 0.5rem;
+}
+
+.itinerary-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.like-button {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #d1eaff;
+}
+
+.like-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.like-button.liked {
+  color: #ff6b6b;
+}
+
+@media (max-width: 600px) {
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .post-date {
+    margin-top: 0.5rem;
+  }
+}
