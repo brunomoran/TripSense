@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import googleMapsRoutes from "./routes/googleMapsRoutes";
 import itineraryRoutes from "./routes/itineraryRoutes";
 import aiRoutes from "./routes/aiRoutes";
+import postRoutes from "./routes/postRoutes";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/map", googleMapsRoutes);
 app.use("/api/itineraries", itineraryRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/posts", postRoutes);
 
 app.get("/", (req, res) => {
   res.send("API funcionando!");
