@@ -16,9 +16,9 @@ type Props = {}
 const API_BASE_URL = getApiUrl()
 
 const transportOptions = [
-  { id: "walking", label: "A pie" },
-  { id: "driving", label: "Coche" },
-  { id: "transit", label: "Transporte público" },
+  { id: "walking", label: "A pie", icon: "🚶" },
+  { id: "driving", label: "Coche", icon: "🚗" },
+  { id: "transit", label: "Transporte público", icon: "🚌" },
 ];
 
 const ItineraryEdit = (props: Props) => {
@@ -27,8 +27,11 @@ const ItineraryEdit = (props: Props) => {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [showModal, setShowModal] = useState<boolean>(false)
+  const [showShareModal, setShowShareModal] = useState<boolean>(false)
   const [pois, setPois] = useState<POI[]>([])
   const [selectedTransport, setSelectedTransport] = useState<string[]>([])
+  const [postDescription, setPostDescription] = useState<string>("")
+  const [isPublishing, setIsPublishing] = useState<boolean>(false)
 
   useEffect(() => {
     if (id) {
@@ -65,21 +68,16 @@ const ItineraryEdit = (props: Props) => {
     if (!itinerary) return
 
     const updatedDays = itinerary.days.map((day) => {
-      if (day.id === dayId) {
+      if (day.id === dayId || day._id === dayId) {
         return {
           ...day,
-          activities: day.activities.filter((a) => a.id !== activityId)
+          activities: day.activities.filter((a) => a.id !== activityId && a._id !== activityId)
         }
       }
       return day
     })
 
     setItinerary({ ...itinerary, days: updatedDays })
-  }
-
-  const handleTogglePublic = () => {
-    if (!itinerary) return
-    setItinerary({ ...itinerary, isPublic: !itinerary.isPublic })
   }
 
   const handleSaveChanges = async () => {
@@ -111,11 +109,11 @@ const ItineraryEdit = (props: Props) => {
     // Generar un ID único para la actividad
     const activityId = 'act_' + Math.random().toString(36).substring(2, 9);
 
-    // Tomamos el primer día del itinerario para simplificar (podrías permitir seleccionar un día)
+    // Tomamos el primer día del itinerario para simplificar
     const firstDay = itinerary.days[0];
 
     const updatedDays = itinerary.days.map(day => {
-      if (day._id === firstDay._id) {
+      if (day._id === firstDay._id || day.id === firstDay.id) {
         return {
           ...day,
           activities: [
@@ -149,6 +147,48 @@ const ItineraryEdit = (props: Props) => {
     );
   };
 
+  const handleShareItinerary = async () => {
+    if (!itinerary) return;
+    setShowShareModal(true);
+  };
+
+  const handlePublishPost = async () => {
+    if (!itinerary) return;
+    
+    setIsPublishing(true);
+    try {
+      // Primero aseguramos que el itinerario sea público
+      if (!itinerary.isPublic) {
+        await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, {
+          ...itinerary,
+          isPublic: true
+        });
+      }
+      
+      // Luego creamos el post
+      const response = await axios.post(`${API_BASE_URL}/posts`, {
+        itineraryId: itinerary._id,
+        description: postDescription.trim() || `¡Mira mi itinerario a ${itinerary.destination}!`
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.status === 201) {
+        alert('¡Tu itinerario ha sido publicado en la comunidad!');
+        setShowShareModal(false);
+        setPostDescription("");
+        // Opcionalmente, redirigir a la página de comunidad
+        navigate('/community');
+      }
+    } catch (error) {
+      console.error("Error al publicar el itinerario:", error);
+      alert("Error al publicar el itinerario. Por favor, inténtalo de nuevo más tarde.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   if (isLoading) return (
     <>
@@ -179,19 +219,21 @@ const ItineraryEdit = (props: Props) => {
       <div className="itinerary-edit-container">
         <h1>Editando {itinerary?.name}</h1>
 
-        <label htmlFor="">
-          <input type="checkbox"
-            checked={itinerary?.isPublic || false}
-            onChange={handleTogglePublic}
-          />
-          {itinerary?.isPublic
-            ? 'Hacer este itinerario privado' : 'Hacer este itinerario público'}
-        </label>
+        <div className="edit-actions">
+          <button className="add-activity-button" onClick={handleOpenModal}>
+            ➕ Añadir actividad
+          </button>
+          
+          <button 
+            className="share-button" 
+            onClick={handleShareItinerary}
+            title="Publica tu itinerario en la comunidad"
+          >
+            📢 Publicar en comunidad
+          </button>
+        </div>
 
-        <button className="add-activity-button" onClick={handleOpenModal}>
-          ➕ Añadir actividad
-        </button>
-
+        {/* Modal para añadir POIs */}
         <Modal show={showModal} onClose={() => setShowModal(false)}>
           <h2>Puntos de interés en {itinerary.destination}</h2>
           {pois.length === 0 ? (
@@ -215,44 +257,88 @@ const ItineraryEdit = (props: Props) => {
           )}
         </Modal>
 
+        {/* Modal para compartir en la comunidad */}
+        <Modal show={showShareModal} onClose={() => setShowShareModal(false)}>
+          <h2>Publicar itinerario en la comunidad</h2>
+          <div className="share-modal-content">
+            <p>Tu itinerario se hará público y aparecerá en la sección de comunidad para que otros viajeros puedan verlo.</p>
+            
+            <div className="itinerary-info-preview">
+              <h3>{itinerary.name}</h3>
+              <p>📍 {itinerary.destination}</p>
+              <p>🗓️ {itinerary.startDate} - {itinerary.endDate}</p>
+              <p>📆 {itinerary.days.length} día(s)</p>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="postDescription">Añade una descripción para tu publicación:</label>
+              <textarea
+                id="postDescription"
+                value={postDescription}
+                onChange={(e) => setPostDescription(e.target.value)}
+                placeholder="¡Comparte tus impresiones sobre este itinerario!"
+                rows={4}
+              />
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-button" 
+                onClick={() => setShowShareModal(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="publish-button" 
+                onClick={handlePublishPost}
+                disabled={isPublishing}
+              >
+                {isPublishing ? 'Publicando...' : '📢 Publicar ahora'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+
         {itinerary?.days.map((day) => (
-          <div key={day._id} className="day-edit-section">
+          <div key={day._id || day.id} className="day-edit-section">
             <h2>🗓️ {day.date}</h2>
             <ul className="activity-edit-list">
               {day.activities.map((activity) => (
-                <li key={activity._id} className="activity-edit-item">
+                <li key={activity._id || activity.id} className="activity-edit-item">
                   <div>
                     <strong>{activity.poi.name}</strong> ({activity.poi.category})<br />
                     <span>{activity.startTime} - {activity.endTime}</span>
                   </div>
-                  <button onClick={() => handleDeleteActivity(day._id ?? '', activity._id ?? '')}>
+                  <button onClick={() => handleDeleteActivity(day._id || day.id || '', activity._id || activity.id || '')}>
                     ❌ Eliminar
                   </button>
                 </li>
               ))}
             </ul>
-            <button onClick={() => handleSaveChanges} className="add-activity-button">➕ Añadir actividad</button>
           </div>
         ))}
 
         <div className="transport-selection">
-          <h3>Selecciona los medios de transporte permitidos:</h3>
+          <h3>Medios de transporte:</h3>
           <div className="transport-options">
             {transportOptions.map(option => (
-              <label key={option.id} className="transport-option">
+              <label 
+                key={option.id} 
+                className={`transport-option ${selectedTransport.includes(option.id) ? 'selected' : ''}`}
+              >
                 <input
                   type="checkbox"
                   value={option.id}
                   checked={selectedTransport.includes(option.id)}
                   onChange={() => handleTransportChange(option.id)}
                 />
-                {option.label}
+                <span>{option.icon} {option.label}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <button onClick={() => handleSaveChanges()} className="save-itinerary-button">💾 Guardar cambios</button>
+        <button onClick={handleSaveChanges} className="save-itinerary-button">💾 Guardar cambios</button>
       </div>
       <Footer />
     </>
