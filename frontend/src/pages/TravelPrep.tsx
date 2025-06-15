@@ -13,6 +13,7 @@ import ListItems from '../components/ListItems';
 import { POI } from '../types/ListItem';
 
 import "../styles/TravelPrep.css";
+import { ItineraryDay } from '../types/Itinerary';
 
 const POI_CATEGORIES = [
   { id: 'restaurant', label: 'Restaurantes', emoji: '🍽️' },
@@ -41,6 +42,15 @@ const TravelPrep = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedPOIs, setSelectedPOIs] = useState<POI[]>([]);
   const [transportModes, setTransportModes] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [days, setDays] = useState<ItineraryDay[]>([
+    {
+      date: new Date().toISOString().split('T')[0],
+      activities: []
+    }
+  ]);
+  const [activeDay, setActiveDay] = useState<number>(0);
 
   const handlePoiClick = (poi: POI) => {
     setMapCoordinates([poi.location.lng, poi.location.lat]);
@@ -127,22 +137,97 @@ const TravelPrep = () => {
   }
 
   const handleAddToItinerary = (poi: POI) => {
-    if (!selectedPOIs.find(p => p.id === poi.id)) {
-      setSelectedPOIs(prev => [...prev, poi]);
+    if (!days[activeDay].activities.some(activity => activity.poi.id === poi.id)) {
+      const updatedDays = [...days];
+      updatedDays[activeDay].activities.push({
+        poi,
+        startTime: "10:00",
+        endTime: "11:00",
+        notes: ""
+      });
+      setDays(updatedDays);
     }
   }
 
-  const handleRemoveFromItinerary = (poiId: number) => {
-    setSelectedPOIs(prev => prev.filter(p => p.id !== poiId));
+  const handleRemoveFromItinerary = (poiId: number, dayIndex: number) => {
+    const updatedDays = [...days];
+    updatedDays[dayIndex].activities = updatedDays[dayIndex].activities.filter(
+      activity => activity.poi.id !== poiId
+    );
+    setDays(updatedDays);
   };
+
+  const handleDateChange = (type: 'start' | 'end', newDate: string) => {
+    if (type === 'start') {
+      setStartDate(newDate);
+      
+      // Si la fecha de inicio es posterior a la de fin, actualizar la de fin
+      if (new Date(newDate) > new Date(endDate)) {
+        const nextDay = new Date(newDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        setEndDate(nextDay.toISOString().split('T')[0]);
+      }
+    } else {
+      setEndDate(newDate);
+    }
+
+    // Regenerar los días basados en las nuevas fechas
+    generateDays(type === 'start' ? newDate : startDate, type === 'end' ? newDate : endDate);
+  }
+
+  const generateDays = (start: string, end: string) => {
+    const startDateTime = new Date(start);
+    const endDateTime = new Date(end);
+    const newDays: ItineraryDay[] = [];
+    
+    // Crear un día por cada fecha entre inicio y fin (inclusive)
+    for (let dt = new Date(startDateTime); dt <= endDateTime; dt.setDate(dt.getDate() + 1)) {
+      const dateString = dt.toISOString().split('T')[0];
+      
+      // Buscar si ya existe este día para mantener sus actividades
+      const existingDay = days.find(day => day.date === dateString);
+      
+      if (existingDay) {
+        newDays.push(existingDay);
+      } else {
+        newDays.push({ date: dateString, activities: [] });
+      }
+    }
+    
+    setDays(newDays);
+    
+    // Asegurarse que el día activo es válido
+    if (activeDay >= newDays.length) {
+      setActiveDay(0);
+    }
+  }
+
+  const resetDays = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowString = tomorrow.toISOString().split('T')[0];
+    
+    setStartDate(today);
+    setEndDate(tomorrowString);
+    setDays([{ date: today, activities: [] }]);
+    setActiveDay(0);
+    setTransportModes([]);
+  }
 
   const handleSaveItinerary = async () => {
     if (!isLoggedIn) {
       return alert("Inicia sesión para guardar el itinerario.");
     }
 
-    if (selectedPOIs.length === 0) {
-      return alert("Añade al menos una actividad al itinerario.");
+    // Verificar que hay al menos una actividad en algún día
+    const hasActivities = days.some(day => day.activities.length > 0);
+    if (!hasActivities) {
+      return alert("Añade al menos una actividad a tu itinerario.");
+    }
+
+    if (transportModes.length === 0) {
+      return alert("Selecciona al menos un medio de transporte.");
     }
 
     try {
@@ -150,27 +235,10 @@ const TravelPrep = () => {
         name: `Itinerario en ${cityName}`,
         description: `Lugares interesantes para visitar en ${cityName}`,
         destination: cityName,
-        startDate: new Date().toISOString().split('T')[0], // Fecha de hoy
-        endDate: new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0], // Mañana
+        startDate: startDate,
+        endDate: endDate,
         userId: user.id,
-        days: [
-          {
-            date: new Date().toISOString().split('T')[0], // Fecha de hoy
-            activities: selectedPOIs.map(poi => ({
-              poi: {
-                id: poi.id,
-                name: poi.name,
-                description: poi.description,
-                location: poi.location,
-                category: poi.category,
-                imageUrl: poi.imageUrl || ""
-              },
-              startTime: "10:00", // Hora de inicio predeterminada
-              endTime: "11:00",   // Hora de fin predeterminada
-              notes: ""
-            }))
-          }
-        ],
+        days: days,
         transportModes: transportModes,
         isPublic: false
       });
@@ -181,8 +249,7 @@ const TravelPrep = () => {
         try {
           await axios.post(`${API_BASE_URL}/itineraries/${itineraryId}/calculate`);
           alert("Itinerario guardado con éxito y rutas calculadas.");
-          setSelectedPOIs([]); // Limpiar itinerario después de guardar
-          setTransportModes([]); // Limpiar modos de transporte seleccionados
+          resetDays(); // Limpiar itinerario después de guardar
           
           window.location.href = `/itinerary/${itineraryId}`; // Redirigir al itinerario guardado	
         } catch (routeError) {
@@ -203,6 +270,11 @@ const TravelPrep = () => {
         : [...prev, transportId]
     );
   };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  }
 
   return (
     <>
@@ -250,7 +322,6 @@ const TravelPrep = () => {
 
         <div className="content-section">
           <div className="left-column">
-            <FilterDropdown />
             <ListItems<POI>
               items={getFilteredPOIs()}
               onItemClick={handlePoiClick}
@@ -272,50 +343,144 @@ const TravelPrep = () => {
             }))}
           />
         </div>
-        {selectedPOIs.length > 0 && (
-          <div className="itinerary-preview">
-            <h3>📝 Itinerario en preparación:</h3>
-            <ul>
-              {selectedPOIs.map((poi) => (
-                <li key={poi.id}>
-                  {poi.name} - {poi.category}
-                  <button
-                    onClick={() => handleRemoveFromItinerary(Number(poi.id))}
-                    className="remove-poi-button"
-                  >
-                    ❌
-                  </button>
-                </li>
-              ))}
-            </ul>
-
-            {/* Selector de medios de transporte */}
-            <div className="transport-selection">
-              <h4>Medios de transporte:</h4>
-              <div className="transport-options">
-                {TRANSPORT_OPTIONS.map(option => {
-                  const isSelected = transportModes.includes(option.id);
-
-                  return (
-                    <label
-                      key={option.id}
-                      className={`transport-option ${isSelected ? 'selected' : ''}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleTransportChange(option.id)}
-                      />
-                      <span>{option.icon} {option.label}</span>
-                    </label>
-                  );
-                })}
+        
+        {cityName && (
+          <div className="itinerary-builder">
+            <h3>🗓️ Planifica tu itinerario</h3>
+            
+            <div className="date-selection">
+              <div className="date-field">
+                <label htmlFor="startDate">Fecha de inicio:</label>
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => handleDateChange('start', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              
+              <div className="date-field">
+                <label htmlFor="endDate">Fecha de fin:</label>
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => handleDateChange('end', e.target.value)}
+                  min={startDate}
+                />
+              </div>
+              
+              <div className="trip-duration">
+                <span>Duración: {days.length} día{days.length !== 1 ? 's' : ''}</span>
               </div>
             </div>
 
-            <button className="save-itinerary-button" onClick={handleSaveItinerary}>
-              💾 Guardar itinerario
-            </button>
+            {days.length > 0 && (
+              <div className="itinerary-days">
+                <div className="days-tabs">
+                  {days.map((day, index) => (
+                    <button
+                      key={day.date}
+                      className={`day-tab ${activeDay === index ? 'active' : ''}`}
+                      onClick={() => setActiveDay(index)}
+                    >
+                      <span className="day-number">Día {index + 1}</span>
+                      <span className="day-date"> {formatDate(day.date)}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="day-content">
+                  <h4>Actividades del día {activeDay + 1}</h4>
+                  
+                  {days[activeDay].activities.length === 0 ? (
+                    <p className="no-activities">No hay actividades planificadas para este día. Añade puntos de interés desde el mapa.</p>
+                  ) : (
+                    <ul className="activities-list">
+                      {days[activeDay].activities.map((activity, idx) => (
+                        <li key={`${activity.poi.id}-${idx}`} className="activity-item">
+                          <div className="activity-info">
+                            <h5>{activity.poi.name}</h5>
+                            <p className="activity-category">{activity.poi.category}</p>
+                            <p className="activity-description">{activity.poi.description}</p>
+                          </div>
+                          <div className="activity-actions">
+                            <div className="activity-time">
+                              <div className="time-input">
+                                <label>Desde:</label>
+                                <input 
+                                  type="time" 
+                                  value={activity.startTime} 
+                                  onChange={(e) => {
+                                    const updatedDays = [...days];
+                                    updatedDays[activeDay].activities[idx].startTime = e.target.value;
+                                    setDays(updatedDays);
+                                  }}
+                                />
+                              </div>
+                              <div className="time-input">
+                                <label>Hasta:</label>
+                                <input 
+                                  type="time" 
+                                  value={activity.endTime} 
+                                  onChange={(e) => {
+                                    const updatedDays = [...days];
+                                    updatedDays[activeDay].activities[idx].endTime = e.target.value;
+                                    setDays(updatedDays);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <button 
+                              className="remove-activity" 
+                              onClick={() => handleRemoveFromItinerary(Number(activity.poi.id), activeDay)}
+                            >
+                              ❌ Eliminar
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {days.some(day => day.activities.length > 0) && (
+              <div className="itinerary-finalization">
+                <div className="transport-selection">
+                  <h4>Selecciona medios de transporte:</h4>
+                  <div className="transport-options">
+                    {TRANSPORT_OPTIONS.map(option => {
+                      const isSelected = transportModes.includes(option.id);
+                      
+                      return (
+                        <label
+                          key={option.id}
+                          className={`transport-option ${isSelected ? 'selected' : ''}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleTransportChange(option.id)}
+                          />
+                          <span>{option.icon} {option.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <button 
+                  className="save-itinerary-button" 
+                  onClick={handleSaveItinerary}
+                  disabled={transportModes.length === 0}
+                >
+                  💾 Guardar itinerario
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
