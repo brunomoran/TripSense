@@ -47,9 +47,52 @@ export const reverseGeocode = async (req: Request, res: Response, next: NextFunc
     const data = await response.json();
 
     if (data.results && data.results.length > 0) {
-      const result = data.results[0];
+      // Buscar específicamente un resultado que sea una localidad (ciudad)
+      let cityResult = data.results.find((r: any) =>
+        r.types.includes('locality')
+      );
+
+      // Si no hay localidad, intentar con área administrativa
+      if (!cityResult) {
+        cityResult = data.results.find((r: any) =>
+          r.types.includes('administrative_area_level_2') ||
+          r.types.includes('administrative_area_level_1')
+        );
+      }
+
+      // Si aún no hay resultado, usar el primer elemento que no sea dirección exacta
+      if (!cityResult) {
+        cityResult = data.results.find((r: any) =>
+          !r.types.includes('street_address') &&
+          !r.types.includes('premise')
+        );
+      }
+
+      // En último caso, usar el primer resultado
+      if (!cityResult) {
+        cityResult = data.results[0];
+      }
+
+      // Encontrar el componente de dirección que sea la localidad (ciudad)
+      const locality = cityResult.address_components.find((component: any) =>
+        component.types.includes('locality')
+      );
+
+      // Si no hay localidad, buscar el distrito o provincia
+      const district = cityResult.address_components.find((component: any) =>
+        component.types.includes('administrative_area_level_2')
+      );
+
+      // Si no hay distrito, buscar la región o comunidad autónoma
+      const region = cityResult.address_components.find((component: any) =>
+        component.types.includes('administrative_area_level_1')
+      );
+
+      // Determinar el mejor nombre para mostrar
+      const cityName = locality?.long_name || district?.long_name || region?.long_name || 'Ubicación actual';
+
       res.status(200).json({
-        name: result.address_components[0]?.long_name || 'Ubicación',
+        name: cityName,
         features: data.results.map((r: any) => ({
           name: r.address_components[0]?.long_name || '',
           placeType: r.types,
