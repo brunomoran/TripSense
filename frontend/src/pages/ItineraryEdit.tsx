@@ -27,11 +27,8 @@ const ItineraryEdit = (props: Props) => {
   const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [showModal, setShowModal] = useState<boolean>(false)
-  const [showShareModal, setShowShareModal] = useState<boolean>(false)
   const [pois, setPois] = useState<POI[]>([])
   const [selectedTransport, setSelectedTransport] = useState<string[]>([])
-  const [postDescription, setPostDescription] = useState<string>("")
-  const [isPublishing, setIsPublishing] = useState<boolean>(false)
 
   useEffect(() => {
     if (id) {
@@ -147,49 +144,6 @@ const ItineraryEdit = (props: Props) => {
     );
   };
 
-  const handleShareItinerary = async () => {
-    if (!itinerary) return;
-    setShowShareModal(true);
-  };
-
-  const handlePublishPost = async () => {
-    if (!itinerary) return;
-    
-    setIsPublishing(true);
-    try {
-      // Primero aseguramos que el itinerario sea público
-      if (!itinerary.isPublic) {
-        await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, {
-          ...itinerary,
-          isPublic: true
-        });
-      }
-      
-      // Luego creamos el post
-      const response = await axios.post(`${API_BASE_URL}/posts`, {
-        itineraryId: itinerary._id,
-        description: postDescription.trim()
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.status === 201) {
-        alert('¡Tu itinerario ha sido publicado en la comunidad!');
-        setShowShareModal(false);
-        setPostDescription("");
-        // Opcionalmente, redirigir a la página de comunidad
-        navigate('/community');
-      }
-    } catch (error) {
-      console.error("Error al publicar el itinerario:", error);
-      alert("Error al publicar el itinerario. Por favor, inténtalo de nuevo más tarde.");
-    } finally {
-      setIsPublishing(false);
-    }
-  };
-
   if (isLoading) return (
     <>
       <Header />
@@ -224,13 +178,6 @@ const ItineraryEdit = (props: Props) => {
             ➕ Añadir actividad
           </button>
           
-          <button 
-            className="share-button" 
-            onClick={handleShareItinerary}
-            title="Publica tu itinerario en la comunidad"
-          >
-            📢 Publicar en comunidad
-          </button>
         </div>
 
         {/* Modal para añadir POIs */}
@@ -255,48 +202,6 @@ const ItineraryEdit = (props: Props) => {
               ))}
             </ul>
           )}
-        </Modal>
-
-        {/* Modal para compartir en la comunidad */}
-        <Modal show={showShareModal} onClose={() => setShowShareModal(false)}>
-          <h2>Publicar itinerario en la comunidad</h2>
-          <div className="share-modal-content">
-            <p>Tu itinerario se hará público y aparecerá en la sección de comunidad para que otros viajeros puedan verlo.</p>
-            
-            <div className="itinerary-info-preview">
-              <h3>{itinerary.name}</h3>
-              <p>📍 {itinerary.destination}</p>
-              <p>🗓️ {itinerary.startDate} - {itinerary.endDate}</p>
-              <p>📆 {itinerary.days.length} día(s)</p>
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="postDescription">Añade una descripción para tu publicación:</label>
-              <textarea
-                id="postDescription"
-                value={postDescription}
-                onChange={(e) => setPostDescription(e.target.value)}
-                placeholder="¡Comparte tus impresiones sobre este itinerario!"
-                rows={4}
-              />
-            </div>
-            
-            <div className="modal-actions">
-              <button 
-                className="cancel-button" 
-                onClick={() => setShowShareModal(false)}
-              >
-                Cancelar
-              </button>
-              <button 
-                className="publish-button" 
-                onClick={handlePublishPost}
-                disabled={isPublishing}
-              >
-                {isPublishing ? 'Publicando...' : '📢 Publicar ahora'}
-              </button>
-            </div>
-          </div>
         </Modal>
 
         {itinerary?.days.map((day) => (

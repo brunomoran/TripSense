@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import axios from "axios"
 import Header from "../components/Header"
 import Footer from "../components/Footer"
@@ -9,6 +9,7 @@ import { getApiUrl } from "../config/api"
 import { Itinerary } from "../types/Itinerary"
 
 import "../styles/ItineraryDetail.css"
+import Modal from "../components/Modal"
 
 const API_BASE_URL = getApiUrl()
 
@@ -16,9 +17,13 @@ type Props = {}
 
 const ItineraryDetail = (props: Props) => {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [itinerary, setItinerary] = useState<Itinerary | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [activeDay, setActiveDay] = useState<number>(0)
+  const [showShareModal, setShowShareModal] = useState<boolean>(false)
+  const [postDescription, setPostDescription] = useState<string>("")
+  const [isPublishing, setIsPublishing] = useState<boolean>(false)
 
   useEffect(() => {
     if (!id) return;
@@ -50,6 +55,50 @@ const ItineraryDetail = (props: Props) => {
       alert("Error al eliminar el itinerario. Por favor, inténtalo de nuevo más tarde.")
     }
   }
+
+  const handleShareItinerary = () => {
+    if (!itinerary) return;
+    setShowShareModal(true);
+  };
+
+  // Nueva función para publicar el itinerario
+  const handlePublishPost = async () => {
+    if (!itinerary) return;
+    
+    setIsPublishing(true);
+    try {
+      // Primero aseguramos que el itinerario sea público
+      if (!itinerary.isPublic) {
+        await axios.put(`${API_BASE_URL}/itineraries/${itinerary._id}`, {
+          ...itinerary,
+          isPublic: true
+        });
+      }
+      
+      // Luego creamos el post
+      const response = await axios.post(`${API_BASE_URL}/posts`, {
+        itineraryId: itinerary._id,
+        description: postDescription.trim() || `¡Mira mi itinerario a ${itinerary.destination}!`
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.status === 201) {
+        alert('¡Tu itinerario ha sido publicado en la comunidad!');
+        setShowShareModal(false);
+        setPostDescription("");
+        // Redirigir a la página de comunidad
+        navigate('/community');
+      }
+    } catch (error) {
+      console.error("Error al publicar el itinerario:", error);
+      alert("Error al publicar el itinerario. Por favor, inténtalo de nuevo más tarde.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
 
   // Función para formatear la fecha en formato legible
   const formatDate = (dateString: string) => {
@@ -181,11 +230,56 @@ const ItineraryDetail = (props: Props) => {
             <button onClick={() => window.location.href = `/itinerary/${itinerary._id}/edit`} className="edit-button">
               ✏️ Editar
             </button>
+            <button onClick={handleShareItinerary} className="share-button">
+              📢 Publicar en comunidad
+            </button>
             <button onClick={() => handleDelete(itinerary._id)} className="delete-button">
               🗑️ Eliminar
             </button>
           </div>
         </div>
+
+        {/* Modal para compartir en la comunidad */}
+        <Modal show={showShareModal} onClose={() => setShowShareModal(false)}>
+          <h2>Publicar itinerario en la comunidad</h2>
+          <div className="share-modal-content">
+            <p>Tu itinerario se hará público y aparecerá en la sección de comunidad para que otros viajeros puedan verlo.</p>
+            
+            <div className="itinerary-info-preview">
+              <h3>{itinerary.name}</h3>
+              <p>📍 {itinerary.destination}</p>
+              <p>🗓️ {itinerary.startDate} - {itinerary.endDate}</p>
+              <p>📆 {itinerary.days.length} día(s)</p>
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="postDescription">Añade una descripción para tu publicación:</label>
+              <textarea
+                id="postDescription"
+                value={postDescription}
+                onChange={(e) => setPostDescription(e.target.value)}
+                placeholder="¡Comparte tus impresiones sobre este itinerario!"
+                rows={4}
+              />
+            </div>
+            
+            <div className="modal-actions">
+              <button 
+                className="cancel-button" 
+                onClick={() => setShowShareModal(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="publish-button" 
+                onClick={handlePublishPost}
+                disabled={isPublishing}
+              >
+                {isPublishing ? 'Publicando...' : '📢 Publicar ahora'}
+              </button>
+            </div>
+          </div>
+        </Modal>
 
         <div className="itinerary-days-tabs">
           {itinerary.days.map((day, index) => (
