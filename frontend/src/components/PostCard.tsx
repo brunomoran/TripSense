@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Post } from '../types/Post'
 import { useAuth } from '../context/AuthContext'
 import { Link } from 'react-router-dom';
@@ -12,8 +12,20 @@ type Props = {
 const PostCard = (props: Props) => {
   const { user: currentUser } = useAuth()
   const [isExpanded, setIsExpanded] = useState(false)
+  const [hasLiked, setHasLiked] = useState(false)
 
-  const hasLiked = props.post.likes.includes(currentUser?._id || '')
+  useEffect(() => {
+    if (currentUser && props.post.likes) {
+      // Comprueba si el ID del usuario actual está en el array de likes
+      const liked = props.post.likes.some(
+        // Compara como strings para evitar problemas con objetos ObjectId vs strings
+        (likeId) => likeId.toString() === currentUser.id.toString()
+      );
+      setHasLiked(liked);
+    } else {
+      setHasLiked(false);
+    }
+  }, [props.post.likes, currentUser]);
 
   // Formatear la fecha
   const formattedDate = new Date(props.post.createdAt).toLocaleDateString('es-ES', {

@@ -10,6 +10,6 @@ router.get('/:id', getPostById);
 router.post('/', protect, createPost);
 router.put('/:id', updatePost);
 router.delete('/:id', deletePost);
-router.post('/:id/like', likePost);
+router.post('/:id/like', protect, likePost);
 
 export default router;

@@ -117,10 +117,10 @@ export const likePost = async (req: Request, res: Response, next: NextFunction):
         }
 
         // Verificar si el usuario ya ha dado like
-        const userIndex = post.likes.indexOf(req.user._id);
-        if (userIndex === -1) {
+        const userLikeIndex = post.likes.findIndex(id => id.toString() === req.user.id);
+        if (userLikeIndex !== -1) {
             // Eliminar el like
-            post.likes.splice(userIndex, 1);
+            post.likes.splice(userLikeIndex, 1);
         } else {
             // Agregar el like
             post.likes.push(req.user._id);
