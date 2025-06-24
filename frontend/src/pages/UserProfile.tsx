@@ -144,6 +144,12 @@ const UserProfile = (props: Props) => {
         }
     }
 
+    const handleItemClick = (item: ListItem) => {
+        if (isOwnProfile) {
+            navigate(`/itinerary/${item.originalItem._id}`);
+        }
+    }
+
     if (isLoading) {
         return (
             <>
@@ -204,10 +210,9 @@ const UserProfile = (props: Props) => {
                 </div>
             )}
             <div className="user-itineraries">
-                <h2>Itinerarios de {profileUser.userName}</h2>
+                <h2>{isOwnProfile ? 'Tus itinerarios' : `Itinerarios de ${profileUser.userName}`}</h2>
                 {itineraries.length > 0 ? (
                     <div className="user-itineraries">
-                        <h2>{isOwnProfile ? 'Tus itinerarios' : 'Itinerarios públicos'}</h2>
                         <ListItems<ListItem>
                             items={itineraries.map(itinerary => ({
                                 id: itinerary._id,  // Mapear _id a id
@@ -217,7 +222,7 @@ const UserProfile = (props: Props) => {
                                 imageUrl: '',
                                 originalItem: itinerary  // Guardar el objeto original para referencia
                             }))}
-                            onItemClick={(item) => navigate(`/itinerary/${item.originalItem._id}`)}
+                            onItemClick={handleItemClick}
                             title=""
                             className="itinerary-list"
                         />

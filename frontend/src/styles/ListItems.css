@@ -158,3 +158,9 @@
 .item-card {
     animation: fadeIn 0.3s ease-out;
 }
+
+.non-clickable {
+    cursor: default !important; /* Cambiar el cursor */
+    pointer-events: none; /* Opcionalmente, deshabilitar eventos del mouse */
+    opacity: 0.9; /* Reducir ligeramente la opacidad para indicar visualmente */
+}
