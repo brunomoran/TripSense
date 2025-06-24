@@ -168,7 +168,7 @@ const ItineraryEdit = (props: Props) => {
       // Luego creamos el post
       const response = await axios.post(`${API_BASE_URL}/posts`, {
         itineraryId: itinerary._id,
-        description: postDescription.trim() || `¡Mira mi itinerario a ${itinerary.destination}!`
+        description: postDescription.trim()
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

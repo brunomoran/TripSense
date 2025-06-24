@@ -100,14 +100,15 @@ export const generateItinerary = async (req: Request, res: Response) => {
 
         // Construir el prompt para Gemini
         let prompt = `Voy a hacer un viaje a ${destination} entre las fechas ${startDate} y ${endDate}. 
-Quiero moverme usando los siguientes modos de transporte: ${transportModes.join(", ")}.`;
+            Quiero moverme usando los siguientes modos de transporte: ${transportModes.join(", ")}.`;
 
         if (preferences && preferences.trim()) {
             prompt += `\nTen en cuenta esta información adicional: "${preferences}".`;
         }
 
         if (availablePois && availablePois.length > 0) {
-            prompt += `\n\nA continuación te proporciono una lista de puntos de interés específicos de ${destination} que debes considerar para crear el itinerario. Intenta utilizar estos lugares en lugar de inventar otros:\n`;
+            prompt += `\n\nA continuación te proporciono una lista de puntos de interés específicos de ${destination} que debes considerar para crear el itinerario. 
+                Intenta utilizar estos lugares en lugar de inventar otros:\n`;
 
             let randomPois: any[] = []
 
@@ -117,7 +118,7 @@ Quiero moverme usando los siguientes modos de transporte: ${transportModes.join(
                 // Crear una copia del array para no modificar el original
                 const poisCopy = [...availablePois];
 
-                // Algoritmo Fisher-Yates (o Knuth) para mezclar el array
+                // Algoritmo Fisher-Yates para mezclar el array
                 for (let i = poisCopy.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [poisCopy[i], poisCopy[j]] = [poisCopy[j], poisCopy[i]];

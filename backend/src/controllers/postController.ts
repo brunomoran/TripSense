@@ -48,8 +48,8 @@ export const createPost = async (req: Request, res: Response, next: NextFunction
 
         // Crear el nuevo post
         const newPost = new Post({
-            userId: req.user._id,
-            existingItinerary,
+            user: req.user._id,
+            itinerary: itineraryId,
             description: description?.trim() || "",
             likes: []
         });

@@ -21,7 +21,7 @@ type Props = {}
 const UserProfile = (props: Props) => {
     const { userName } = useParams<{ userName: string }>()
     const navigate = useNavigate()
-    const { user: currentUser, isLoggedIn } = useAuth()
+    const { user: currentUser, isLoggedIn, logout } = useAuth()
 
     const [profileUser, setProfileUser] = useState<ProfileUser | null>(null)
     const [itineraries, setItineraries] = useState<Itinerary[]>([])
@@ -136,6 +136,14 @@ const UserProfile = (props: Props) => {
         }
     }
 
+    const handleLogout = () => {
+        // Mostrar confirmación antes de cerrar sesión
+        if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+            logout();
+            navigate('/');
+        }
+    }
+
     if (isLoading) {
         return (
             <>
@@ -188,6 +196,12 @@ const UserProfile = (props: Props) => {
                     isFollowing={isFollowing}
                     handleFollow={handleFollowToggle}
                 />
+            )}
+            {isOwnProfile && (
+                <div className="profile-actions">
+                    <button onClick={() => navigate('/travel_preparation')}>Crear Itinerario</button>
+                    <button onClick={handleLogout}>Cerrar Sesión</button>
+                </div>
             )}
             <div className="user-itineraries">
                 <h2>Itinerarios de {profileUser.userName}</h2>
