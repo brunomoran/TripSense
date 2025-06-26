@@ -22,7 +22,7 @@ const ProfileHeader = ({ profileUser, itinerariesLength }: Props) => {
                     <div className="stats">
                         <span><strong>{profileUser.followers.length}</strong> Seguidores </span>
                         <span><strong>{profileUser.following.length}</strong> Siguiendo </span>
-                        <span><strong>{itinerariesLength}</strong> Publicaciones</span>
+                        <span><strong>{itinerariesLength}</strong> Itinerarios</span>
                     </div>
                 </div>
             </div>

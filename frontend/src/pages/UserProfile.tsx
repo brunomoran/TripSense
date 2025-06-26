@@ -25,6 +25,7 @@ const UserProfile = (props: Props) => {
 
     const [profileUser, setProfileUser] = useState<ProfileUser | null>(null)
     const [itineraries, setItineraries] = useState<Itinerary[]>([])
+    const [publicItinerariesCount, setPublicItinerariesCount] = useState<number>(0)
     const [isFollowing, setIsFollowing] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>(null)
@@ -66,12 +67,16 @@ const UserProfile = (props: Props) => {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             })
-            setItineraries(itinerariesResponse.data)
+            const allItineraries = itinerariesResponse.data;
 
-            // Mostrar itinerarios públicos si no es el propio perfil
-            if (!isOwnProfile) {
-                const publicItineraries = itinerariesResponse.data.filter((itinerary: Itinerary) => itinerary.isPublic)
-                setItineraries(publicItineraries)
+            // Calcular el número de itinerarios públicos
+            const publicItineraries = allItineraries.filter((itinerary: Itinerary) => itinerary.isPublic);
+
+            // Mostrar todos los itinerarios si es el propio perfil, solo los públicos si no
+            if (isOwnProfile) {
+                setItineraries(allItineraries);
+            } else {
+                setItineraries(publicItineraries);
             }
         } catch (error: any) {
             console.error('Error fetching user data:', error);
